@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>총무 관리 시스템</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --bg:#F2F4F6;
+    --card:#ffffff;
+    --t1:#191F28;   /* primary text */
+    --t2:#4E5968;   /* secondary text */
+    --t3:#8B95A1;   /* tertiary text */
+    --blue:#3182F6;
+    --blue-bg:#EBF2FF;
+    --green:#1DB67F;
+    --green-bg:#E6F9F0;
+    --orange:#FF9800;
+    --orange-bg:#FFF4E5;
+    --red:#F04452;
+    --red-bg:#FDEAEC;
+    --purple:#6C5CE7;
+    --purple-bg:#F0EEFF;
+    --line:#E5E8EB;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--t1);
+    font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    display:flex; min-height:100vh;
+  }
+  /* ===== 사이드바 ===== */
+  aside{
+    width:230px; background:var(--card); flex-shrink:0;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column; padding:20px 14px;
+    position:sticky; top:0; height:100vh;
+  }
+  .profile{display:flex; align-items:center; gap:10px; padding:8px 8px 18px;}
+  .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--blue);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:15px; flex-shrink:0;
+  }
+  .profile .name{font-weight:700; font-size:14.5px; color:var(--t1);}
+  .profile .sub{font-size:11.5px; color:var(--t3); margin-top:1px;}
+  .nav-section-label{font-size:11px; color:var(--t3); font-weight:600; margin:14px 10px 6px; letter-spacing:.2px;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px;
+    cursor:pointer; font-size:13.5px; font-weight:600; color:var(--t2); margin-bottom:2px;
+    transition:background .12s, color .12s;
+  }
+  .nav-item .ic{width:20px; text-align:center; font-size:15px;}
+  .nav-item .lbl{flex:1;}
+  .nav-item .badge{
+    font-size:11px; font-weight:700; color:var(--t3); background:var(--bg);
+    border-radius:20px; padding:2px 8px; min-width:20px; text-align:center;
+  }
+  .nav-item:hover{background:#F7F9FB;}
+  .nav-item.active{background:var(--blue-bg); color:var(--blue);}
+  .nav-item.active .badge{background:#fff; color:var(--blue);}
+  .nav-item.dash .chev{margin-left:auto; color:var(--t3); font-size:12px;}
+  aside .bottom{margin-top:auto; padding-top:10px; border-top:1px solid var(--line);}
+
+  /* ===== 메인 ===== */
+  main{flex:1; padding:32px 40px 60px; max-width:1100px;}
+  .top-row{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px;}
+  .date{font-size:13px; color:var(--t3); margin-bottom:6px;}
+  h1.greet{font-size:24px; font-weight:800; margin:0 0 4px;}
+  .greet-sub{font-size:13.5px; color:var(--t2); margin:0;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;}
+  .stat-card{
+    background:var(--card); border-radius:20px; padding:20px 20px 18px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    transition:box-shadow .15s, transform .15s;
+  }
+  .stat-card:hover{box-shadow:0 8px 20px rgba(25,31,40,0.08); transform:translateY(-2px);}
+  .stat-card .icon-circle{
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-size:16px; margin-bottom:14px;
+  }
+  .stat-card .num{font-size:26px; font-weight:800; line-height:1;}
+  .stat-card .lbl{font-size:12.5px; color:var(--t3); margin-top:4px; font-weight:500;}
+
+  .rate-card{
+    background:var(--card); border-radius:20px; padding:22px 24px; margin-bottom:22px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .rate-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .rate-head .title{font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:7px;}
+  .rate-head .pct{font-size:20px; font-weight:800; color:var(--blue);}
+  .bar-bg{height:10px; background:#EEF1F4; border-radius:20px; overflow:hidden;}
+  .bar-fill{height:100%; background:linear-gradient(90deg,var(--blue),#5B9BFF); border-radius:20px; transition:width .4s;}
+  .rate-foot{display:flex; justify-content:space-between; font-size:12px; color:var(--t3); margin-top:8px;}
+
+  h2.section-title{font-size:16px; font-weight:800; margin:0 0 14px;}
+
+  .cat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:30px;}
+  .cat-card{
+    background:var(--card); border-radius:20px; padding:20px 18px; cursor:pointer;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03); border:2px solid transparent;
+    transition:box-shadow .15s, transform .15s, border-color .15s;
+  }
+  .cat-card:hover{box-shadow:0 8px 20px rgba(25,31,40,0.08); transform:translateY(-2px);}
+  .cat-card.active{border-color:var(--blue);}
+  .cat-card .icon-circle{
+    width:42px; height:42px; border-radius:14px; display:flex; align-items:center;
+    justify-content:center; font-size:19px; margin-bottom:14px;
+  }
+  .cat-card .name{font-size:14px; font-weight:700; margin-bottom:4px;}
+  .cat-card .desc{font-size:11px; color:var(--t3); line-height:1.4; margin-bottom:14px; min-height:30px;}
+  .cat-card .bar-bg{height:6px;}
+  .cat-card .foot{display:flex; justify-content:space-between; font-size:11px; margin-top:8px; color:var(--t2); font-weight:600;}
+
+  .task-card{background:var(--card); border-radius:20px; padding:8px 8px; box-shadow:0 1px 2px rgba(0,0,0,0.03);}
+  .task-card-head{display:flex; justify-content:space-between; align-items:center; padding:14px 16px 6px;}
+  .task-row{
+    display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px;
+    transition:background .12s;
+  }
+  .task-row:hover{background:#F7F9FB;}
+  .task-row .dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .task-row .ttl{flex:1; font-size:13.5px; font-weight:600; color:var(--t1);}
+  .tag{font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; flex-shrink:0;}
+  .tag.pr-high{color:var(--red); background:var(--red-bg);}
+  .tag.pr-mid{color:var(--orange); background:var(--orange-bg);}
+  .tag.pr-low{color:var(--t3); background:#F2F4F6;}
+  .tag.st-done{color:var(--green); background:var(--green-bg);}
+  .tag.st-doing{color:var(--blue); background:var(--blue-bg);}
+  .tag.st-wait{color:var(--t3); background:#F2F4F6;}
+  .cat-name-tag{font-size:11px; color:var(--t2); background:#F2F4F6; padding:3px 9px; border-radius:20px; flex-shrink:0;}
+  .due{font-size:12px; color:var(--t3); width:92px; text-align:right; flex-shrink:0;}
+  .empty{padding:40px; text-align:center; color:var(--t3); font-size:13px;}
+
+  .task-row{flex-wrap:wrap; position:relative;}
+  .task-row.is-done .ttl{color:var(--t3); text-decoration:line-through;}
+  .chk{
+    width:20px; height:20px; border-radius:50%; border:2px solid var(--line); flex-shrink:0;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:#fff; transition:background .12s, border-color .12s; font-weight:800;
+  }
+  .chk.done{background:var(--green); border-color:var(--green);}
+
+  .row-actions{display:flex; align-items:center; gap:2px; flex-shrink:0;}
+  .icon-btn{
+    background:none; border:none; cursor:pointer; color:var(--t3); font-size:14px;
+    padding:5px 7px; border-radius:8px; font-family:inherit;
+  }
+  .icon-btn:hover{background:#F2F4F6; color:var(--t1);}
+
+  .status-menu-inline{flex-basis:100%; display:flex; gap:6px; padding:10px 0 2px 34px;}
+  .status-menu-inline button{
+    border:none; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:700;
+    cursor:pointer; font-family:inherit; background:#F2F4F6; color:var(--t2);
+  }
+  .status-menu-inline button:hover{background:#E5E8EB;}
+  .status-menu-inline button.cur{background:var(--blue); color:#fff;}
+
+  .task-list-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .add-task-btn{
+    background:var(--blue); color:#fff; border:none; border-radius:10px; padding:9px 16px;
+    font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0;
+  }
+  .add-task-btn:hover{background:#1B6FE0;}
+
+  .progress-card{background:var(--card); border-radius:18px; padding:18px 20px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,0.03);}
+  .progress-card .prog-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13.5px; font-weight:700; color:var(--t1);}
+  .progress-card .prog-count{color:var(--purple); font-size:15px; font-weight:800;}
+  .progress-card .prog-bar-bg{height:9px; background:#EEF1F4; border-radius:20px; overflow:hidden;}
+  .progress-card .prog-bar-fill{height:100%; background:linear-gradient(90deg,var(--purple),#9b8cf2); border-radius:20px; transition:width .4s;}
+  .progress-card .prog-foot{display:flex; justify-content:space-between; font-size:12px; color:var(--t3); margin-top:8px;}
+
+  .filter-tabs{display:flex; gap:8px; margin-bottom:14px;}
+  .filter-tab{
+    background:var(--card); border:1px solid var(--line); border-radius:20px; padding:7px 14px;
+    font-size:12.5px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit;
+  }
+  .filter-tab:hover{background:#F7F9FB;}
+  .filter-tab.active{background:var(--blue); color:#fff; border-color:var(--blue);}
+
+  .run-btn{
+    background:var(--purple-bg); color:var(--purple); border:none; border-radius:8px;
+    padding:5px 10px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .run-btn:hover{background:#e3ddff;}
+
+  .month-switch{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .month-arrow{
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--card);
+    color:var(--t2); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .month-arrow:hover{background:#F2F4F6; color:var(--t1);}
+  .month-label{font-size:15px; font-weight:800; color:var(--t1); min-width:90px; text-align:center;}
+  .month-today{
+    background:var(--purple-bg); color:var(--purple); border:none; border-radius:20px; padding:6px 14px;
+    font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .month-today:hover{background:#e3ddff;}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="profile">
+    <div class="avatar">G</div>
+    <div>
+      <div class="name">총무 관리</div>
+      <div class="sub">업무 관리 시스템</div>
+    </div>
+  </div>
+
+  <div class="nav-item dash active" data-cat="all">
+    <span class="ic">🗂️</span><span class="lbl">대시보드</span><span class="chev">›</span>
+  </div>
+
+  <div class="nav-section-label">업무 카테고리</div>
+  <div id="sideCats"></div>
+
+  <div class="bottom">
+    <div class="nav-item"><span class="ic">🔔</span><span class="lbl">알림</span></div>
+    <div class="nav-item"><span class="ic">⚙️</span><span class="lbl">설정</span></div>
+  </div>
+</aside>
+
+<main>
+  <div class="top-row">
+    <div>
+      <div class="date" id="todayDate"></div>
+      <h1 class="greet">안녕하세요, 아스터님 👋</h1>
+      <p class="greet-sub">오늘 처리할 업무를 확인하세요.</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="icon-circle" style="background:var(--blue-bg); color:var(--blue);">📋</div>
+      <div class="num" id="statTotal">0</div>
+      <div class="lbl">전체 업무</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon-circle" style="background:var(--blue-bg); color:var(--blue);">⏱️</div>
+      <div class="num" id="statDoing">0</div>
+      <div class="lbl">진행중</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon-circle" style="background:var(--green-bg); color:var(--green);">✅</div>
+      <div class="num" id="statDone">0</div>
+      <div class="lbl">완료</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon-circle" style="background:var(--orange-bg); color:var(--orange);">⚠️</div>
+      <div class="num" id="statWait">0</div>
+      <div class="lbl">대기중</div>
+    </div>
+  </div>
+
+  <div class="rate-card">
+    <div class="rate-head">
+      <div class="title">📈 전체 업무 완료율</div>
+      <div class="pct" id="ratePct">0%</div>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="rateBar" style="width:0%;"></div></div>
+    <div class="rate-foot">
+      <span id="rateFootDone">완료 0건</span>
+      <span id="rateFootTotal">전체 0건</span>
+    </div>
+  </div>
+
+  <h2 class="section-title">업무 카테고리</h2>
+  <div class="cat-grid" id="catGrid"></div>
+
+  <div class="task-list-header">
+    <h2 class="section-title" id="taskListTitle" style="margin:0;">처리 예정 업무 <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(마감일 순)</span></h2>
+    <div style="display:flex; gap:8px;">
+      <button class="add-task-btn" id="openGuiBtn" style="background:var(--purple); display:none;">📥 전표 생성기 열기</button>
+      <button class="add-task-btn" id="addTaskBtn">+ 업무 추가</button>
+    </div>
+  </div>
+  <div class="month-switch" id="monthSwitchWrap" style="display:none;">
+    <button class="month-arrow" id="monthPrev" title="이전 달">‹</button>
+    <span class="month-label" id="monthSwitchLabel">2026년 6월</span>
+    <button class="month-arrow" id="monthNext" title="다음 달">›</button>
+    <button class="month-today" id="monthSwitchToday" style="display:none;">오늘로</button>
+  </div>
+  <div class="progress-card" id="taskProgressWrap" style="display:none;"></div>
+  <div class="filter-tabs" id="taskFilterWrap" style="display:none;"></div>
+  <div class="task-card" id="taskList"></div>
+</main>
+
+<script>
+const CATS = {
+  purchase:{ name:'구매업무', desc:'소모품·비품 구매 및 발주 관리 (년/월별 구분)', icon:'🛒', color:'var(--blue)', bg:'var(--blue-bg)' },
+  routine: { name:'상시업무', desc:'일상적으로 반복되는 총무 업무', icon:'🗒️', color:'var(--green)', bg:'var(--green-bg)' },
+  monthly: { name:'월간업무', desc:'매월 처리일자별로 반복되는 정기 업무', icon:'📅', color:'var(--purple)', bg:'var(--purple-bg)' },
+  yearly:  { name:'연간업무', desc:'연 1회 또는 연간 계획 업무', icon:'🗓️', color:'var(--orange)', bg:'var(--orange-bg)' },
+  etc:     { name:'기타업무', desc:'분류되지 않은 기타 지원 업무', icon:'📌', color:'var(--t2)', bg:'#F2F4F6' },
+};
+
+const DEFAULT_TASKS = [
+  {cat:'purchase', title:'2026년 구매계약 관리', priority:'high', status:'wait', due:'2026-06-30'},
+  {cat:'purchase', title:'공급업체 관리', priority:'mid', status:'wait', due:'2026-06-25'},
+  {cat:'purchase', title:'공급업체 등록현황 갱신', priority:'mid', status:'wait', due:'2026-07-01'},
+  {cat:'purchase', title:'구매관리 절차서 점검', priority:'low', status:'wait', due:'2026-07-10'},
+  {cat:'purchase', title:'계약 일반조건 검토', priority:'mid', status:'wait', due:'2026-07-05'},
+  {cat:'purchase', title:'기타 구매 처리', priority:'low', status:'wait', due:'2026-06-22'},
+  {cat:'purchase', title:'소송관련 대응', priority:'high', status:'wait', due:'2026-06-20'},
+  {cat:'purchase', title:'외주계약 정리 리스트 관리', priority:'mid', status:'wait', due:'2026-07-15'},
+  {cat:'purchase', title:'업무 흐름도 정비', priority:'low', status:'wait', due:'2026-07-20'},
+
+  {cat:'routine', title:'협회관리', priority:'mid', status:'wait', due:'2026-06-25'},
+  {cat:'routine', title:'공문접수', priority:'mid', status:'wait', due:'2026-06-18'},
+  {cat:'routine', title:'공증업무', priority:'mid', status:'wait', due:'2026-06-19'},
+  {cat:'routine', title:'명함 발급관리', priority:'low', status:'wait', due:'2026-06-23'},
+  {cat:'routine', title:'보험 관리', priority:'high', status:'wait', due:'2026-06-30'},
+  {cat:'routine', title:'사원증 제작', priority:'low', status:'wait', due:'2026-06-24'},
+  {cat:'routine', title:'선물지급 관리', priority:'low', status:'wait', due:'2026-06-26'},
+  {cat:'routine', title:'신용평가 관련 협회 실적신고', priority:'high', status:'wait', due:'2026-07-05'},
+  {cat:'routine', title:'피복관리', priority:'low', status:'wait', due:'2026-07-08'},
+  {cat:'routine', title:'행사 지원', priority:'mid', status:'wait', due:'2026-07-12'},
+
+  {cat:'monthly', title:'정수기/비데 렌탈료 처리', day:'1일', sortDay:1, priority:'mid', status:'done', due:'2026-07-01'},
+  {cat:'monthly', title:'공기청정기 렌탈료 처리', day:'1일', sortDay:1, priority:'mid', status:'done', due:'2026-07-01'},
+  {cat:'monthly', title:'법인운전대행 전표처리', day:'4일', sortDay:4, priority:'high', status:'done', due:'2026-07-04'},
+  {cat:'monthly', title:'직책보임자 통신비 처리', day:'10일', sortDay:10, priority:'mid', status:'done', due:'2026-07-10'},
+  {cat:'monthly', title:'전자도서관 이용료 처리', day:'10일', sortDay:10, priority:'mid', status:'done', due:'2026-07-10'},
+  {cat:'monthly', title:'휴양시설 이용료 처리', day:'10일', sortDay:10, priority:'low', status:'done', due:'2026-07-10'},
+  {cat:'monthly', title:'복합기 임차료 처리', day:'15일', sortDay:15, priority:'mid', status:'done', due:'2026-07-15'},
+  {cat:'monthly', title:'수산뉴텍 임대료 처리', day:'15일', sortDay:15, priority:'mid', status:'done', due:'2026-07-15'},
+  {cat:'monthly', title:'하눌빌딩 임대료 처리', day:'15일', sortDay:15, priority:'mid', status:'done', due:'2026-07-15'},
+  {cat:'monthly', title:'과학기술인공제회 처리', day:'15일', sortDay:15, priority:'mid', status:'done', due:'2026-07-15'},
+  {cat:'monthly', title:'자금계획 수립', day:'20일', sortDay:20, priority:'mid', status:'doing', due:'2026-06-20'},
+  {cat:'monthly', title:'사옥관리비 정산', day:'30~31일', sortDay:30, priority:'high', status:'wait', due:'2026-06-30'},
+
+  {cat:'yearly', title:'ESG평가 자료 준비', priority:'high', status:'wait', due:'2026-09-30'},
+  {cat:'yearly', title:'조직평가 결과 정리', priority:'mid', status:'wait', due:'2026-08-15'},
+  {cat:'yearly', title:'계열사 평가', priority:'mid', status:'wait', due:'2026-10-01'},
+  {cat:'yearly', title:'소장단회의 준비', priority:'mid', status:'wait', due:'2026-07-20'},
+  {cat:'yearly', title:'본사 MV 기획', priority:'low', status:'wait', due:'2026-11-01'},
+
+  {cat:'etc', title:'버스노선 설문 결과 정리', priority:'mid', status:'done', due:'2026-06-05'},
+  {cat:'etc', title:'내방객 응대 (협력업체 미팅)', priority:'mid', status:'doing', due:'2026-06-18'},
+  {cat:'etc', title:'도서구입 신청 처리', priority:'low', status:'wait', due:'2026-06-21'},
+  {cat:'etc', title:'상조 서비스 제안서 검토', priority:'mid', status:'wait', due:'2026-06-26'},
+  {cat:'etc', title:'사내식당 위탁운영 관리', priority:'mid', status:'wait', due:'2026-07-01'},
+  {cat:'etc', title:'복지제도 정비', priority:'low', status:'wait', due:'2026-07-15'},
+  {cat:'etc', title:'독서장려캠페인 운영 (분기)', priority:'mid', status:'wait', due:'2026-07-31'},
+];
+
+const PRIORITY_LABEL = {high:'높음', mid:'보통', low:'낮음'};
+const STATUS_LABEL = {done:'완료', doing:'진행중', wait:'대기'};
+const STATUS_DOT = {done:'var(--green)', doing:'var(--blue)', wait:'var(--t3)'};
+const STORAGE_KEY = 'gongmu_tasks_v1';
+
+// ===================== 월간업무 월별 처리 현황 =====================
+const CURRENT_YM = '2026-06';
+let selectedMonth = CURRENT_YM;
+
+function monthlyStatusOf(t, ym){
+  if(t.monthlyLog && (ym in t.monthlyLog)) return t.monthlyLog[ym];
+  if(ym === CURRENT_YM) return t.status;
+  return 'wait';
+}
+function setMonthlyStatus(t, ym, status){
+  if(!t.monthlyLog) t.monthlyLog = {};
+  t.monthlyLog[ym] = status;
+  if(ym === CURRENT_YM) t.status = status;
+}
+function shiftMonth(ym, delta){
+  let [y,m] = ym.split('-').map(Number);
+  m += delta;
+  while(m>12){ m-=12; y+=1; }
+  while(m<1){ m+=12; y-=1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function fmtYMLabel(ym){
+  const [y,m] = ym.split('-').map(Number);
+  return `${y}년 ${m}월`;
+}
+// 월간업무의 처리일자(sortDay)를 선택한 월(ym)에 맞춰 실제 날짜 문자열로 변환 (말일 보정 포함)
+function monthlyDueDate(t, ym){
+  const [y,m] = ym.split('-').map(Number);
+  let day = t.sortDay || 1;
+  const lastDay = new Date(y, m, 0).getDate();
+  if(day > lastDay) day = lastDay;
+  return `${ym}-${String(day).padStart(2,'0')}`;
+}
+function editMonthlyDay(id){
+  const t = TASKS.find(x=>x.id===id);
+  if(!t) return;
+  const input = prompt('처리 일자를 입력하세요 (1~31, 월말 처리는 31 입력)', String(t.sortDay || 1));
+  if(input===null) return;
+  const day = parseInt(input, 10);
+  if(!day || day<1 || day>31){ alert('1~31 사이의 숫자를 입력하세요.'); return; }
+  t.sortDay = day;
+  t.day = `${day}일`;
+  saveTasks();
+  renderAll();
+}
+// 화면에 표시할 실제 상태: 월간업무는 선택한 월(selectedMonth) 기준, 그 외는 t.status 그대로
+function effStatus(t){
+  return t.cat==='monthly' ? monthlyStatusOf(t, selectedMonth) : t.status;
+}
+// 대시보드 전체 통계용 상태: 월간업무는 항상 이번 달(CURRENT_YM) 기준으로 고정
+function currentStatus(t){
+  return t.cat==='monthly' ? monthlyStatusOf(t, CURRENT_YM) : t.status;
+}
+
+function loadTasks(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  }catch(e){}
+  return DEFAULT_TASKS.map((t,i)=>({...t, id:'t'+i}));
+}
+function saveTasks(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(TASKS)); }catch(e){}
+}
+
+let TASKS = loadTasks();
+let activeCat = 'all';
+let activeFilter = 'all';
+let openMenuId = null;
+
+function renderAll(){
+  renderSideNav();
+  renderStats();
+  renderCatGrid();
+  renderTaskList();
+}
+
+function toggleDone(id){
+  const t = TASKS.find(x=>x.id===id);
+  if(!t) return;
+  if(t.cat==='monthly'){
+    const cur = monthlyStatusOf(t, selectedMonth);
+    setMonthlyStatus(t, selectedMonth, cur==='done' ? 'wait' : 'done');
+  }else{
+    t.status = (t.status==='done') ? 'wait' : 'done';
+  }
+  saveTasks();
+  renderAll();
+}
+function setStatus(id, status){
+  const t = TASKS.find(x=>x.id===id);
+  if(!t) return;
+  if(t.cat==='monthly'){
+    setMonthlyStatus(t, selectedMonth, status);
+  }else{
+    t.status = status;
+  }
+  openMenuId = null;
+  saveTasks();
+  renderAll();
+}
+function deleteTask(id){
+  const idx = TASKS.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  if(!confirm('이 업무를 삭제할까요?')) return;
+  TASKS.splice(idx,1);
+  saveTasks();
+  renderAll();
+}
+function addTask(){
+  const title = (prompt('업무명을 입력하세요') || '').trim();
+  if(!title) return;
+  const due = (prompt('마감일을 입력하세요 (YYYY-MM-DD)', '2026-06-30') || '2026-06-30').trim();
+  const cat = activeCat==='all' ? 'etc' : activeCat;
+  const task = { id:'t'+Date.now(), cat, title, priority:'mid', status:'wait', due };
+  if(cat==='monthly'){
+    const day = (prompt('처리 일자를 입력하세요 (예: 15일)', '1일') || '1일').trim();
+    task.day = day;
+    task.sortDay = parseInt(day) || 1;
+  }
+  TASKS.push(task);
+  saveTasks();
+  renderAll();
+}
+
+function fmtDate(){
+  const d = new Date('2026-06-16');
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('todayDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
+}
+
+function renderSideNav(){
+  const wrap = document.getElementById('sideCats');
+  wrap.innerHTML = '';
+  Object.entries(CATS).forEach(([key, c])=>{
+    const total = TASKS.filter(t=>t.cat===key).length;
+    const pending = TASKS.filter(t=>t.cat===key && currentStatus(t)!=='done').length;
+    const div = document.createElement('div');
+    div.className = 'nav-item';
+    div.dataset.cat = key;
+    div.innerHTML = `<span class="ic">${c.icon}</span><span class="lbl">${c.name}</span><span class="badge">${pending}</span>`;
+    div.addEventListener('click', ()=> setActive(key));
+    wrap.appendChild(div);
+  });
+}
+
+function renderStats(){
+  const total = TASKS.length;
+  const doing = TASKS.filter(t=>currentStatus(t)==='doing').length;
+  const done = TASKS.filter(t=>currentStatus(t)==='done').length;
+  const wait = TASKS.filter(t=>currentStatus(t)==='wait').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statDoing').textContent = doing;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statWait').textContent = wait;
+  const pct = Math.round(done/total*100);
+  document.getElementById('ratePct').textContent = pct + '%';
+  document.getElementById('rateBar').style.width = pct + '%';
+  document.getElementById('rateFootDone').textContent = `완료 ${done}건`;
+  document.getElementById('rateFootTotal').textContent = `전체 ${total}건`;
+}
+
+function renderCatGrid(){
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  Object.entries(CATS).forEach(([key, c])=>{
+    const items = TASKS.filter(t=>t.cat===key);
+    const total = items.length;
+    const done = items.filter(t=>currentStatus(t)==='done').length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const card = document.createElement('div');
+    card.className = 'cat-card' + (activeCat===key ? ' active' : '');
+    card.dataset.cat = key;
+    card.innerHTML = `
+      <div class="icon-circle" style="background:${c.bg}; color:${c.color};">${c.icon}</div>
+      <div class="name">${c.name}</div>
+      <div class="desc">${c.desc}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
+      <div class="foot"><span>${pct}% 완료</span><span>${total}건</span></div>`;
+    card.addEventListener('click', ()=> setActive(key));
+    grid.appendChild(card);
+  });
+}
+
+// 월간업무 항목 ↔ 전표생성_웹GUI.html 사전설정 매핑
+const GUI_FILE = 'voucher.html';
+const MONTHLY_GUI_MAP = {
+  '정수기/비데 렌탈료 처리': { task:'etc', etcType:'정수기/비데' },
+  '공기청정기 렌탈료 처리': { task:'etc', etcType:'공기청정기' },
+  '법인운전대행 전표처리':   { task:'driver' },
+  '직책보임자 통신비 처리':  { task:'comm' },
+  '전자도서관 이용료 처리':  { task:'etc', etcType:'전자도서관' },
+  '휴양시설 이용료 처리':    { task:'etc', etcType:'휴양시설' },
+  '복합기 임차료 처리':      { task:'etc', etcType:'복합기임차료' },
+  '수산뉴텍 임대료 처리':    { task:'rent', vendor:'수산뉴텍' },
+  '하눌빌딩 임대료 처리':    { task:'rent', vendor:'하눌빌딩' },
+  '과학기술인공제회 처리':   { task:'etc', etcType:'기타', vendor:'과학기술인공제회' },
+  '사옥관리비 정산':         { task:'mgmt' },
+};
+
+function openVoucherGui(title){
+  const cfg = title ? MONTHLY_GUI_MAP[title] : null;
+  let url = GUI_FILE;
+  if(cfg){
+    const params = new URLSearchParams();
+    params.set('task', cfg.task);
+    if(cfg.etcType) params.set('etcType', cfg.etcType);
+    if(cfg.vendor) params.set('vendor', cfg.vendor);
+    url += '?' + params.toString();
+  }
+  window.open(url, '_blank');
+}
+
+// 업무 제목 ↔ 별도 관리 시스템(앱) 연결 (카테고리 무관)
+const APP_LINKS = {
+  '피복관리': { url:'uniform.html', label:'피복관리 열기', icon:'🧥' },
+};
+function openAppLink(title){
+  const cfg = APP_LINKS[title];
+  if(cfg) window.open(cfg.url, '_blank');
+}
+
+function taskRowHTML(t){
+  const st = effStatus(t);
+  const prClass = t.priority==='high' ? 'pr-high' : t.priority==='mid' ? 'pr-mid' : 'pr-low';
+  const stClass = st==='done' ? 'st-done' : st==='doing' ? 'st-doing' : 'st-wait';
+  const menuOpen = openMenuId === t.id;
+  const showRunBtn = t.cat==='monthly' && !!MONTHLY_GUI_MAP[t.title];
+  const appCfg = APP_LINKS[t.title];
+  const isMonthly = t.cat==='monthly';
+  const dueLabel = isMonthly ? monthlyDueDate(t, selectedMonth) : (t.due||'');
+  const row = document.createElement('div');
+  row.className = 'task-row' + (st==='done' ? ' is-done' : '');
+  row.innerHTML = `
+    <span class="chk ${st==='done'?'done':''}" data-act="toggle">${st==='done'?'✓':''}</span>
+    <span class="ttl">${t.title}</span>
+    <span class="tag ${prClass}">${PRIORITY_LABEL[t.priority]} 우선순위</span>
+    <span class="tag ${stClass}">${STATUS_LABEL[st]}</span>
+    <span class="cat-name-tag">${CATS[t.cat].name}</span>
+    ${isMonthly ? `<span class="due">📅 ${dueLabel}</span>` : ''}
+    <div class="row-actions">
+      ${showRunBtn ? `<button class="run-btn" data-act="run" title="전표 생성기 실행">▶ 전표생성</button>` : ''}
+      ${appCfg ? `<button class="run-btn" data-act="app" title="${appCfg.label}" style="background:var(--green-bg); color:var(--green);">${appCfg.icon} ${appCfg.label}</button>` : ''}
+      ${isMonthly ? `<button class="icon-btn" data-act="editday" title="처리 일자 수정">✏️</button>` : ''}
+      <button class="icon-btn" data-act="menu" title="상태 변경">⋯</button>
+      <button class="icon-btn" data-act="del" title="삭제">🗑</button>
+    </div>
+    ${menuOpen ? `<div class="status-menu-inline">
+        <button data-act="set" data-status="wait" class="${st==='wait'?'cur':''}">대기</button>
+        <button data-act="set" data-status="doing" class="${st==='doing'?'cur':''}">진행중</button>
+        <button data-act="set" data-status="done" class="${st==='done'?'cur':''}">완료</button>
+      </div>` : ''}
+  `;
+  row.querySelector('[data-act="toggle"]').addEventListener('click', (e)=>{ e.stopPropagation(); toggleDone(t.id); });
+  row.querySelector('[data-act="menu"]').addEventListener('click', (e)=>{ e.stopPropagation(); openMenuId = (openMenuId===t.id ? null : t.id); renderTaskList(); });
+  row.querySelector('[data-act="del"]').addEventListener('click', (e)=>{ e.stopPropagation(); deleteTask(t.id); });
+  if(showRunBtn){
+    row.querySelector('[data-act="run"]').addEventListener('click', (e)=>{ e.stopPropagation(); openVoucherGui(t.title); });
+  }
+  if(appCfg){
+    row.querySelector('[data-act="app"]').addEventListener('click', (e)=>{ e.stopPropagation(); openAppLink(t.title); });
+  }
+  if(isMonthly){
+    row.querySelector('[data-act="editday"]').addEventListener('click', (e)=>{ e.stopPropagation(); editMonthlyDay(t.id); });
+  }
+  row.querySelectorAll('[data-act="set"]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); setStatus(t.id, btn.dataset.status); });
+  });
+  return row;
+}
+
+function renderProgressAndFilters(catItems){
+  const progressWrap = document.getElementById('taskProgressWrap');
+  const filterWrap = document.getElementById('taskFilterWrap');
+
+  if(activeCat==='all'){
+    progressWrap.style.display = 'none';
+    filterWrap.style.display = 'none';
+    return;
+  }
+
+  const total = catItems.length;
+  const doneCnt = catItems.filter(t=>effStatus(t)==='done').length;
+  const doingCnt = catItems.filter(t=>effStatus(t)==='doing').length;
+  const waitCnt = catItems.filter(t=>effStatus(t)==='wait').length;
+  const pct = total ? Math.round(doneCnt/total*100) : 0;
+
+  progressWrap.style.display = '';
+  progressWrap.innerHTML = `
+    <div class="prog-head"><span>완료 현황</span><span class="prog-count">${doneCnt} / ${total}건</span></div>
+    <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;"></div></div>
+    <div class="prog-foot"><span>완료율 ${pct}%</span><span>미완료 ${total-doneCnt}건</span></div>`;
+
+  filterWrap.style.display = '';
+  filterWrap.innerHTML = '';
+  [['all','전체',total],['wait','대기',waitCnt],['doing','진행중',doingCnt],['done','완료',doneCnt]].forEach(([key,label,cnt])=>{
+    const b = document.createElement('button');
+    b.className = 'filter-tab' + (activeFilter===key ? ' active' : '');
+    b.textContent = key==='all' ? `${label}` : `${label} (${cnt})`;
+    b.addEventListener('click', ()=>{ activeFilter = key; renderTaskList(); });
+    filterWrap.appendChild(b);
+  });
+}
+
+function renderTaskList(){
+  const wrap = document.getElementById('taskList');
+  const title = document.getElementById('taskListTitle');
+  const catItems = activeCat==='all' ? TASKS.slice() : TASKS.filter(t=>t.cat===activeCat);
+
+  document.getElementById('openGuiBtn').style.display = (activeCat==='monthly') ? '' : 'none';
+
+  const monthSwitchWrap = document.getElementById('monthSwitchWrap');
+  if(activeCat==='monthly'){
+    monthSwitchWrap.style.display = '';
+    document.getElementById('monthSwitchLabel').textContent = fmtYMLabel(selectedMonth);
+    document.getElementById('monthSwitchToday').style.display = (selectedMonth===CURRENT_YM) ? 'none' : '';
+  }else{
+    monthSwitchWrap.style.display = 'none';
+  }
+
+  renderProgressAndFilters(catItems);
+
+  const items = (activeCat==='all' || activeFilter==='all') ? catItems : catItems.filter(t=>effStatus(t)===activeFilter);
+
+  if(items.length===0){
+    title.innerHTML = (activeCat==='all' ? '처리 예정 업무' : CATS[activeCat].name + ' 업무') +
+      ` <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(0건)</span>`;
+    wrap.innerHTML = '<div class="empty">해당 조건에 업무가 없습니다.</div>';
+    return;
+  }
+
+  // 월간업무는 선택한 월의 처리 일자(매월 며칠)별로 그룹핑해서 표시
+  if(activeCat==='monthly'){
+    items.sort((a,b)=> (a.sortDay||0)-(b.sortDay||0) || a.title.localeCompare(b.title));
+    title.innerHTML = `${CATS.monthly.name} 업무 <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(${fmtYMLabel(selectedMonth)} · 처리 일자 순 · ${items.length}건)</span>`;
+
+    const groups = [];
+    items.forEach(t=>{
+      let g = groups.find(g=>g.day===t.day);
+      if(!g){ g = {day:t.day, sortDay:t.sortDay, list:[]}; groups.push(g); }
+      g.list.push(t);
+    });
+    groups.sort((a,b)=> a.sortDay-b.sortDay);
+
+    wrap.innerHTML = '';
+    groups.forEach(g=>{
+      const head = document.createElement('div');
+      head.className = 'day-group-head';
+      head.style.cssText = 'display:flex; align-items:center; gap:8px; margin:18px 0 8px; padding-left:2px;';
+      const doneCnt = g.list.filter(t=>effStatus(t)==='done').length;
+      const monthNum = parseInt(selectedMonth.split('-')[1], 10);
+      head.innerHTML = `<span style="font-size:13.5px; font-weight:700; color:var(--t1);">${monthNum}월 ${g.day} 처리</span>
+        <span style="font-size:12px; color:var(--t3);">${doneCnt}/${g.list.length}건 완료</span>`;
+      wrap.appendChild(head);
+      g.list.forEach(t=> wrap.appendChild(taskRowHTML(t)));
+    });
+    return;
+  }
+
+  // 구매업무는 마감일의 년/월별로 그룹핑해서 표시
+  if(activeCat==='purchase'){
+    items.sort((a,b)=> (a.due||'').localeCompare(b.due||'') || a.title.localeCompare(b.title));
+    title.innerHTML = `${CATS.purchase.name} 업무 <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(년/월별 · ${items.length}건)</span>`;
+
+    const groups = [];
+    items.forEach(t=>{
+      const ym = (t.due||'').slice(0,7);
+      const key = ym || '미지정';
+      let g = groups.find(g=>g.key===key);
+      if(!g){ g = {key, ym, list:[]}; groups.push(g); }
+      g.list.push(t);
+    });
+    groups.sort((a,b)=> (a.ym||'9999').localeCompare(b.ym||'9999'));
+
+    wrap.innerHTML = '';
+    groups.forEach(g=>{
+      const head = document.createElement('div');
+      head.className = 'day-group-head';
+      head.style.cssText = 'display:flex; align-items:center; gap:8px; margin:18px 0 8px; padding-left:2px;';
+      const doneCnt = g.list.filter(t=>effStatus(t)==='done').length;
+      const label = g.ym ? fmtYMLabel(g.ym) : '기한 미지정';
+      head.innerHTML = `<span style="font-size:13.5px; font-weight:700; color:var(--t1);">📅 ${label}</span>
+        <span style="font-size:12px; color:var(--t3);">${doneCnt}/${g.list.length}건 완료</span>`;
+      wrap.appendChild(head);
+      g.list.forEach(t=> wrap.appendChild(taskRowHTML(t)));
+    });
+    return;
+  }
+
+  items.sort((a,b)=> (a.due||'').localeCompare(b.due||''));
+  title.innerHTML = (activeCat==='all' ? '처리 예정 업무' : CATS[activeCat].name + ' 업무') +
+    ` <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(마감일 순 · ${items.length}건)</span>`;
+
+  wrap.innerHTML = '';
+  items.forEach(t=> wrap.appendChild(taskRowHTML(t)));
+}
+
+function setActive(key){
+  activeCat = key;
+  activeFilter = 'all';
+  openMenuId = null;
+  if(key==='monthly') selectedMonth = CURRENT_YM;
+  document.querySelectorAll('.nav-item[data-cat]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.cat===key);
+  });
+  document.querySelector('.nav-item.dash').classList.toggle('active', key==='all');
+  renderCatGrid();
+  renderTaskList();
+}
+
+fmtDate();
+renderAll();
+document.querySelector('.nav-item.dash').addEventListener('click', ()=> setActive('all'));
+document.getElementById('addTaskBtn').addEventListener('click', addTask);
+document.getElementById('openGuiBtn').addEventListener('click', ()=> openVoucherGui());
+document.getElementById('monthPrev').addEventListener('click', ()=>{ selectedMonth = shiftMonth(selectedMonth, -1); openMenuId = null; renderTaskList(); });
+document.getElementById('monthNext').addEventListener('click', ()=>{ selectedMonth = shiftMonth(selectedMonth, 1); openMenuId = null; renderTaskList(); });
+document.getElementById('monthSwitchToday').addEventListener('click', ()=>{ selectedMonth = CURRENT_YM; openMenuId = null; renderTaskList(); });
+document.addEventListener('click', (e)=>{
+  if(openMenuId !== null && !e.target.closest('.row-actions') && !e.target.closest('.status-menu-inline')){
+    openMenuId = null;
+    renderTaskList();
+  }
+});
+</script>
+</body>
+</html>
