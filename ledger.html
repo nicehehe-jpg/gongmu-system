@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>가계부 - Toss Style</title>
+  <title>가계부 - Toss Style Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -27,7 +27,6 @@
       padding-bottom: 80px;
     }
 
-    /* 상단 헤더 */
     .header {
       position: sticky; top: 0; z-index: 100;
       background: rgba(255, 255, 255, 0.8);
@@ -39,10 +38,8 @@
     .header h1 { font-size: 18px; font-weight: 700; }
     .back-btn { font-size: 20px; text-decoration: none; color: var(--toss-text-main); }
 
-    /* 컨테이너 */
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
-    /* 카드 스타일 */
     .card {
       background: var(--toss-card);
       border-radius: 24px;
@@ -51,13 +48,11 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    /* 요약 정보 */
     .summary-title { font-size: 15px; color: var(--toss-text-sub); margin-bottom: 8px; }
     .summary-amount { font-size: 28px; font-weight: 800; margin-bottom: 16px; }
     .summary-diff { font-size: 14px; color: var(--toss-text-grey); }
     .summary-diff span { font-weight: 600; }
 
-    /* 입력 버튼 */
     .fab {
       position: fixed; bottom: 24px; right: 24px;
       width: 56px; height: 56px; border-radius: 28px;
@@ -68,7 +63,6 @@
       z-index: 200;
     }
 
-    /* 통계 섹션 */
     .chart-container { height: 200px; margin: 20px 0; }
     .category-list { margin-top: 20px; }
     .category-item {
@@ -83,7 +77,6 @@
     .cat-amount { font-weight: 700; font-size: 15px; }
     .cat-percent { font-size: 12px; color: var(--toss-text-grey); margin-left: 8px; }
 
-    /* 최근 내역 */
     .history-title { font-size: 17px; font-weight: 700; margin: 24px 0 12px 4px; }
     .history-item {
       display: flex; justify-content: space-between; align-items: center;
@@ -97,7 +90,6 @@
     .hist-amount.expense { color: var(--toss-text-main); }
     .hist-amount.income { color: var(--toss-success); }
 
-    /* 입력 모달 */
     .modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.5); display: none; align-items: flex-end; z-index: 300;
@@ -105,12 +97,12 @@
     .modal.active { display: flex; }
     .modal-content {
       background: white; width: 100%; border-radius: 24px 24px 0 0;
-      padding: 24px; animation: slideUp 0.3s ease-out;
+      padding: 24px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto;
     }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     
     .input-group { margin-bottom: 20px; }
-    .input-label { font-size: 13px; color: var(--toss-text-sub); margin-bottom: 8px; display: block; }
+    .input-label { font-size: 13px; color: var(--toss-text-sub); margin-bottom: 8px; display: block; font-weight: 600; }
     .input-field { 
       width: 100%; border: none; background: var(--toss-bg); padding: 16px;
       border-radius: 16px; font-size: 16px; font-weight: 600; outline: none;
@@ -120,10 +112,10 @@
                 background: white; font-weight: 600; cursor: pointer; text-align: center; }
     .type-tab.active { background: var(--toss-blue); color: white; border-color: var(--toss-blue); }
     
-    .cat-select { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
-    .cat-option { padding: 10px; border-radius: 12px; border: 1px solid var(--toss-border); 
-                  font-size: 12px; text-align: center; cursor: pointer; }
-    .cat-option.active { border-color: var(--toss-blue); color: var(--toss-blue); background: rgba(0,100,255,0.05); }
+    .option-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .option-btn { padding: 10px; border-radius: 12px; border: 1px solid var(--toss-border); 
+                  font-size: 12px; text-align: center; cursor: pointer; background: white; }
+    .option-btn.active { border-color: var(--toss-blue); color: var(--toss-blue); background: rgba(0,100,255,0.05); font-weight: 600; }
 
     .submit-btn {
       width: 100%; padding: 18px; border-radius: 16px; background: var(--toss-blue);
@@ -131,6 +123,10 @@
     }
 
     .empty { text-align: center; padding: 40px 0; color: var(--toss-text-grey); font-size: 14px; }
+    
+    /* 삭제 버튼 */
+    .delete-btn { color: var(--toss-text-grey); font-size: 12px; border: none; background: none; cursor: pointer; margin-left: 10px; }
+    .delete-btn:hover { color: var(--toss-danger); }
   </style>
 </head>
 <body>
@@ -155,17 +151,13 @@
     <div class="chart-container">
       <canvas id="expenseChart"></canvas>
     </div>
-    <div class="category-list" id="categoryList">
-      <!-- 카테고리별 내역 동적 삽입 -->
-    </div>
+    <div class="category-list" id="categoryList"></div>
   </div>
 
   <!-- 최근 내역 -->
   <h2 class="history-title">최근 내역</h2>
   <div class="card" style="padding: 8px 20px;">
-    <div id="historyList">
-      <!-- 내역 동적 삽입 -->
-    </div>
+    <div id="historyList"></div>
   </div>
 </div>
 
@@ -180,21 +172,36 @@
     </div>
 
     <div class="input-group">
+      <label class="input-label">날짜</label>
+      <input type="date" id="date" class="input-field">
+    </div>
+
+    <div class="input-group">
       <label class="input-label">금액</label>
-      <input type="number" id="amount" class="input-field" placeholder="얼마를 썼나요?" autofocus>
+      <input type="number" id="amount" class="input-field" placeholder="얼마를 썼나요?">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">결제 수단</label>
+      <div class="option-grid" id="methodSelect">
+        <div class="option-btn active" onclick="setMethod('현금', this)">💵 현금</div>
+        <div class="option-btn" onclick="setMethod('신용카드', this)">💳 카드</div>
+        <div class="option-btn" onclick="setMethod('계좌이체', this)">🏦 계좌</div>
+        <div class="option-btn" onclick="setMethod('체크카드', this)">🏧 체크</div>
+      </div>
     </div>
 
     <div class="input-group">
       <label class="input-label">카테고리</label>
-      <div class="cat-select" id="catSelect">
-        <div class="cat-option active" onclick="setCat('식비', this)">🍽️ 식비</div>
-        <div class="cat-option" onclick="setCat('교통', this)">🚗 교통</div>
-        <div class="cat-option" onclick="setCat('쇼핑', this)">🛍️ 쇼핑</div>
-        <div class="cat-option" onclick="setCat('의료', this)">🏥 의료</div>
-        <div class="cat-option" onclick="setCat('문화', this)">🎬 문화</div>
-        <div class="cat-option" onclick="setCat('생활', this)">🏠 생활</div>
-        <div class="cat-option" onclick="setCat('통신', this)">📱 통신</div>
-        <div class="cat-option" onclick="setCat('기타', this)">📌 기타</div>
+      <div class="option-grid" id="catSelect">
+        <div class="option-btn active" onclick="setCat('식비', this)">🍽️ 식비</div>
+        <div class="option-btn" onclick="setCat('교통', this)">🚗 교통</div>
+        <div class="option-btn" onclick="setCat('쇼핑', this)">🛍️ 쇼핑</div>
+        <div class="option-btn" onclick="setCat('의료', this)">🏥 의료</div>
+        <div class="option-btn" onclick="setCat('문화', this)">🎬 문화</div>
+        <div class="option-btn" onclick="setCat('생활', this)">🏠 생활</div>
+        <div class="option-btn" onclick="setCat('통신', this)">📱 통신</div>
+        <div class="option-btn" onclick="setCat('기타', this)">📌 기타</div>
       </div>
     </div>
 
@@ -208,17 +215,22 @@
 </div>
 
 <script>
-  let data = JSON.parse(localStorage.getItem('toss_ledger') || '[]');
+  let data = JSON.parse(localStorage.getItem('toss_ledger_v2') || '[]');
   let currentType = 'expense';
   let currentCat = '식비';
+  let currentMethod = '현금';
   let chart = null;
 
   const icons = {
     '식비': '🍽️', '교통': '🚗', '쇼핑': '🛍️', '의료': '🏥',
-    '문화': '🎬', '생활': '🏠', '통신': '📱', '기타': '📌', '수입': '💰'
+    '문화': '🎬', '생활': '🏠', '통신': '📱', '기타': '📌', '수입': '💰',
+    '현금': '💵', '신용카드': '💳', '계좌이체': '🏦', '체크카드': '🏧'
   };
 
-  function openModal() { document.getElementById('inputModal').classList.add('active'); }
+  function openModal() { 
+    document.getElementById('inputModal').classList.add('active'); 
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+  }
   function closeModal() { document.getElementById('inputModal').classList.remove('active'); }
 
   function setType(type, el) {
@@ -229,40 +241,59 @@
 
   function setCat(cat, el) {
     currentCat = cat;
-    document.querySelectorAll('.cat-option').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#catSelect .option-btn').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setMethod(method, el) {
+    currentMethod = method;
+    document.querySelectorAll('#methodSelect .option-btn').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
   }
 
   function saveEntry() {
     const amount = document.getElementById('amount').value;
+    const date = document.getElementById('date').value;
     const desc = document.getElementById('desc').value || currentCat;
-    if(!amount) return alert('금액을 입력해주세요');
+    if(!amount || !date) return alert('금액과 날짜를 입력해주세요');
 
     data.unshift({
       id: Date.now(),
       type: currentType,
       cat: currentType === 'income' ? '수입' : currentCat,
+      method: currentMethod,
       amount: parseInt(amount),
       desc: desc,
-      date: new Date().toISOString()
+      date: date
     });
 
-    localStorage.setItem('toss_ledger', JSON.stringify(data));
+    localStorage.setItem('toss_ledger_v2', JSON.stringify(data));
     updateUI();
     closeModal();
     
-    // 필드 초기화
     document.getElementById('amount').value = '';
     document.getElementById('desc').value = '';
   }
 
+  function deleteEntry(id) {
+    if(!confirm('삭제하시겠습니까?')) return;
+    data = data.filter(i => i.id !== id);
+    localStorage.setItem('toss_ledger_v2', JSON.stringify(data));
+    updateUI();
+  }
+
   function updateUI() {
     const now = new Date();
-    const thisMonth = data.filter(i => new Date(i.date).getMonth() === now.getMonth());
-    const lastMonth = data.filter(i => new Date(i.date).getMonth() === now.getMonth() - 1);
+    const currentMonthStr = now.toISOString().substring(0, 7); // "2026-06"
+    
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthStr = lastMonth.toISOString().substring(0, 7);
 
-    const thisExp = thisMonth.filter(i => i.type === 'expense').reduce((a, b) => a + b.amount, 0);
-    const lastExp = lastMonth.filter(i => i.type === 'expense').reduce((a, b) => a + b.amount, 0);
+    const thisMonthData = data.filter(i => i.date.startsWith(currentMonthStr));
+    const lastMonthData = data.filter(i => i.date.startsWith(lastMonthStr));
+
+    const thisExp = thisMonthData.filter(i => i.type === 'expense').reduce((a, b) => a + b.amount, 0);
+    const lastExp = lastMonthData.filter(i => i.type === 'expense').reduce((a, b) => a + b.amount, 0);
 
     document.getElementById('totalExpense').textContent = thisExp.toLocaleString() + '원';
     
@@ -272,8 +303,8 @@
                      `지난달과 똑같이 썼어요`;
     document.getElementById('monthDiff').innerHTML = diffText;
 
-    renderHistory(thisMonth);
-    renderStats(thisMonth);
+    renderHistory(data);
+    renderStats(thisMonthData);
   }
 
   function renderHistory(items) {
@@ -282,13 +313,16 @@
       list.innerHTML = '<div class="empty">내역이 없어요</div>';
       return;
     }
-    list.innerHTML = items.slice(0, 10).map(i => `
+    list.innerHTML = items.slice(0, 20).map(i => `
       <div class="history-item">
         <div class="hist-main">
           <span class="hist-desc">${i.desc}</span>
-          <span class="hist-sub">${i.cat} · ${new Date(i.date).toLocaleDateString()}</span>
+          <span class="hist-sub">${i.cat} · ${i.method} · ${i.date}</span>
         </div>
-        <span class="hist-amount ${i.type}">${i.type === 'expense' ? '-' : '+'}${i.amount.toLocaleString()}원</span>
+        <div style="display:flex; align-items:center;">
+          <span class="hist-amount ${i.type}">${i.type === 'expense' ? '-' : '+'}${i.amount.toLocaleString()}원</span>
+          <button class="delete-btn" onclick="deleteEntry(${i.id})">✕</button>
+        </div>
       </div>
     `).join('');
   }
@@ -301,13 +335,12 @@
     const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
     const total = expItems.reduce((a, b) => a + b.amount, 0);
 
-    // 차트 업데이트
     const ctx = document.getElementById('expenseChart').getContext('2d');
     if(chart) chart.destroy();
     
     if(sortedCats.length === 0) {
       document.querySelector('.chart-container').style.display = 'none';
-      document.getElementById('categoryList').innerHTML = '<div class="empty">지출 통계가 없어요</div>';
+      document.getElementById('categoryList').innerHTML = '<div class="empty">이번 달 지출 통계가 없어요</div>';
       return;
     }
     document.querySelector('.chart-container').style.display = 'block';
@@ -328,7 +361,6 @@
       }
     });
 
-    // 리스트 업데이트
     document.getElementById('categoryList').innerHTML = sortedCats.map(([cat, amt]) => `
       <div class="category-item">
         <div class="cat-info">
