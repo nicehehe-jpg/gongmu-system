@@ -68,6 +68,11 @@
   .date{font-size:13px; color:var(--t3); margin-bottom:6px;}
   h1.greet{font-size:24px; font-weight:800; margin:0 0 4px;}
   .greet-sub{font-size:13.5px; color:var(--t2); margin:0;}
+  .sync-badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; margin-left:6px; vertical-align:middle;}
+  .sync-badge.online{background:var(--green-bg); color:var(--green);}
+  .sync-badge.saving{background:var(--blue-bg); color:var(--blue);}
+  .sync-badge.loading{background:#F2F4F6; color:var(--t3);}
+  .sync-badge.offline{background:var(--orange-bg); color:var(--orange);}
 
   .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;}
   .stat-card{
@@ -197,6 +202,158 @@
     font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
   }
   .month-today:hover{background:#e3ddff;}
+
+  /* 설정 모달 */
+  .modal-overlay{position:fixed; inset:0; background:rgba(25,31,40,.45); z-index:200; display:none; align-items:center; justify-content:center; padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card); border-radius:24px; padding:26px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.22);}
+  .modal h3{font-size:18px; font-weight:800; margin:0 0 4px;}
+  .modal .modal-sub{font-size:12.5px; color:var(--t3); margin:0 0 22px; font-weight:500;}
+  .set-section{font-size:12.5px; font-weight:800; color:var(--t1); margin:22px 0 12px; display:flex; align-items:center; gap:7px;}
+  .set-section:first-of-type{margin-top:6px;}
+  .set-field{margin-bottom:13px;}
+  .set-field label{display:block; font-size:12px; font-weight:700; color:var(--t2); margin-bottom:6px;}
+  .set-field input{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:11px; font-size:14px; font-family:inherit; background:var(--bg); color:var(--t1);}
+  .set-field input:focus{outline:none; border-color:var(--blue); background:#fff;}
+  .set-grid{display:grid; grid-template-columns:1fr 1fr; gap:11px;}
+  .set-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:var(--bg); border-radius:12px; margin-bottom:8px;}
+  .set-row .info{font-size:12.5px; color:var(--t2);} .set-row .info b{color:var(--t1);}
+  .set-links{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .set-link{display:flex; align-items:center; gap:8px; padding:12px 14px; background:var(--bg); border:1px solid var(--line); border-radius:12px; font-size:13px; font-weight:700; color:var(--t1); cursor:pointer; font-family:inherit; text-align:left;}
+  .set-link:hover{background:var(--blue-bg); border-color:#BBD5FF; color:var(--blue);}
+  .set-btn{background:var(--blue); color:#fff; border:none; border-radius:10px; padding:9px 15px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;}
+  .set-btn:hover{background:#1B6FE0;}
+  .set-btn.line{background:var(--card); color:var(--t2); border:1px solid var(--line);}
+  .set-btn.line:hover{background:#F7F9FB;}
+  .modal-actions{display:flex; gap:10px; margin-top:24px;}
+  .modal-actions .set-btn{flex:1; padding:13px; font-size:14px; border-radius:13px;}
+
+  /* 캘린더 보기 */
+  .view-toggle{display:inline-flex; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:3px; gap:2px;}
+  .view-toggle button{background:none; border:none; padding:6px 13px; font-size:12.5px; font-weight:700; color:var(--t3); cursor:pointer; font-family:inherit; border-radius:8px;}
+  .view-toggle button.on{background:var(--card); color:var(--blue); box-shadow:0 1px 2px rgba(0,0,0,.06);}
+  .calendar-wrap{background:var(--card); border-radius:18px; padding:18px; box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .cal-dow{text-align:center; font-size:11.5px; font-weight:700; color:var(--t3); padding:4px 0 8px;}
+  .cal-dow.sun{color:#E0586A;} .cal-dow.sat{color:#3182F6;}
+  .cal-cell{min-height:92px; border:1px solid var(--line); border-radius:11px; padding:6px; display:flex; flex-direction:column; gap:3px; background:#fff;}
+  .cal-cell.blank{background:#FAFBFC; border-color:transparent;}
+  .cal-cell.today{border-color:var(--blue); box-shadow:0 0 0 2px var(--blue-bg);}
+  .cal-daynum{font-size:11.5px; font-weight:700; color:var(--t2); margin-bottom:1px;}
+  .cal-daynum.sun{color:#E0586A;} .cal-daynum.sat{color:#3182F6;}
+  .cal-chip{font-size:10.5px; font-weight:700; padding:3px 6px; border-radius:6px; cursor:pointer; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border-left:3px solid;}
+  .cal-chip.done{background:var(--green-bg); color:#0E9E6E; border-color:#1DB67F;}
+  .cal-chip.doing{background:var(--blue-bg); color:var(--blue); border-color:var(--blue);}
+  .cal-chip.wait{background:var(--bg); color:var(--t2); border-color:var(--t3);}
+  .cal-chip:hover{filter:brightness(.96);}
+  .cal-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; font-size:11.5px; color:var(--t2);}
+  .cal-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .cal-dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
+  @media(max-width:720px){ .set-grid,.set-links{grid-template-columns:1fr;} .cal-cell{min-height:76px;} .cal-chip{font-size:9.5px;} }
+
+  /* ===== 날씨 + 식단표 위젯 ===== */
+  .info-widget-row{
+    display:grid; grid-template-columns:1fr 1.6fr; gap:14px; margin-bottom:22px;
+  }
+  /* 날씨 카드 */
+  .weather-card{
+    background:linear-gradient(135deg,#1a73e8 0%,#0d47a1 100%);
+    border-radius:20px; padding:22px 24px;
+    color:#fff; box-shadow:0 4px 16px rgba(26,115,232,0.25);
+    display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden;
+  }
+  .weather-card::before{
+    content:''; position:absolute; top:-30px; right:-30px;
+    width:120px; height:120px; border-radius:50%;
+    background:rgba(255,255,255,0.07);
+  }
+  .weather-card::after{
+    content:''; position:absolute; bottom:-20px; left:-20px;
+    width:80px; height:80px; border-radius:50%;
+    background:rgba(255,255,255,0.05);
+  }
+  .weather-loc{
+    font-size:11.5px; font-weight:700; opacity:.8; letter-spacing:.3px;
+    display:flex; align-items:center; gap:5px;
+  }
+  .weather-main{
+    display:flex; align-items:center; gap:14px;
+  }
+  .weather-icon{ font-size:44px; line-height:1; }
+  .weather-temp{ font-size:42px; font-weight:800; line-height:1; }
+  .weather-temp sup{ font-size:20px; font-weight:600; vertical-align:super; }
+  .weather-desc{ font-size:13px; opacity:.85; margin-top:3px; }
+  .weather-details{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+    background:rgba(255,255,255,0.12); border-radius:12px; padding:10px 12px;
+  }
+  .weather-detail-item{ text-align:center; }
+  .weather-detail-item .wd-val{ font-size:13.5px; font-weight:700; }
+  .weather-detail-item .wd-lbl{ font-size:10.5px; opacity:.75; margin-top:1px; }
+  .weather-update{ font-size:10.5px; opacity:.6; text-align:right; }
+  .weather-loading{ opacity:.7; font-size:13px; text-align:center; padding:20px 0; }
+
+  /* 식단표 카드 */
+  .meal-card{
+    background:var(--card); border-radius:20px; padding:0;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03); overflow:hidden;
+  }
+  .meal-card-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 20px 12px; border-bottom:1px solid var(--line);
+  }
+  .meal-card-head .mc-title{
+    font-size:14.5px; font-weight:800; color:var(--t1);
+    display:flex; align-items:center; gap:7px;
+  }
+  .meal-card-head .mc-badge{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px;
+    background:var(--green-bg); color:var(--green);
+  }
+  .meal-card-head .mc-link{
+    font-size:11.5px; color:var(--blue); text-decoration:none; font-weight:600;
+  }
+  .meal-card-head .mc-link:hover{ text-decoration:underline; }
+  .meal-tabs{
+    display:flex; gap:0; border-bottom:1px solid var(--line);
+  }
+  .meal-tab{
+    flex:1; padding:10px 0; text-align:center; font-size:12.5px; font-weight:700;
+    color:var(--t3); cursor:pointer; border-bottom:2px solid transparent;
+    transition:color .12s, border-color .12s; background:none; border-top:none;
+    border-left:none; border-right:none; font-family:inherit;
+  }
+  .meal-tab.active{ color:var(--blue); border-bottom-color:var(--blue); }
+  .meal-tab:hover:not(.active){ color:var(--t2); }
+  .meal-body{ padding:14px 20px 16px; }
+  .meal-today-label{
+    font-size:11px; font-weight:700; color:var(--t3); margin-bottom:10px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .meal-today-label .today-dot{
+    width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block;
+  }
+  .meal-menu-list{ display:flex; flex-direction:column; gap:5px; }
+  .meal-menu-item{
+    display:flex; align-items:center; gap:8px; font-size:13px; color:var(--t1);
+    padding:6px 10px; border-radius:10px; background:#F7F9FB;
+  }
+  .meal-menu-item .mi-dot{
+    width:6px; height:6px; border-radius:50%; flex-shrink:0;
+  }
+  .meal-menu-item.mi-main{ background:var(--blue-bg); font-weight:700; }
+  .meal-menu-item.mi-main .mi-dot{ background:var(--blue); }
+  .meal-menu-item:not(.mi-main) .mi-dot{ background:var(--t3); }
+  .meal-empty{ text-align:center; color:var(--t3); font-size:13px; padding:20px 0; }
+  .meal-img-wrap{ padding:10px 20px 16px; }
+  .meal-img-wrap img{ width:100%; border-radius:12px; cursor:pointer; }
+  .meal-img-wrap img:hover{ opacity:.92; }
+  .meal-week-title{
+    font-size:12px; font-weight:700; color:var(--t2); margin-bottom:8px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .meal-loading{ text-align:center; color:var(--t3); font-size:13px; padding:30px 0; }
+  .meal-error{ text-align:center; color:var(--red); font-size:12.5px; padding:20px 0; }
 </style>
 </head>
 <body>
@@ -218,8 +375,8 @@
   <div id="sideCats"></div>
 
   <div class="bottom">
-    <div class="nav-item"><span class="ic">🔔</span><span class="lbl">알림</span></div>
-    <div class="nav-item"><span class="ic">⚙️</span><span class="lbl">설정</span></div>
+    <div class="nav-item" id="navAlert"><span class="ic">🔔</span><span class="lbl">알림</span></div>
+    <div class="nav-item" id="navSettings" onclick="openSettings()"><span class="ic">⚙️</span><span class="lbl">설정</span></div>
   </div>
 </aside>
 
@@ -228,8 +385,38 @@
     <div>
       <div class="date" id="todayDate"></div>
       <h1 class="greet">안녕하세요, 아스터님 👋</h1>
-      <p class="greet-sub">오늘 처리할 업무를 확인하세요.</p>
+      <p class="greet-sub">오늘 처리할 업무를 확인하세요. <span id="syncBadge" class="sync-badge loading">☁ 연결 중…</span></p>
     </div>
+  </div>
+
+  <!-- ===== 날씨 + 식단표 위젯 ===== -->
+  <div class="info-widget-row">
+
+    <!-- 날씨 카드 -->
+    <div class="weather-card" id="weatherCard">
+      <div class="weather-loc">📍 울산광역시 북구 매곡동</div>
+      <div id="weatherContent" class="weather-loading">날씨 정보를 불러오는 중...</div>
+      <div class="weather-update" id="weatherUpdate"></div>
+    </div>
+
+    <!-- 식단표 카드 -->
+    <div class="meal-card">
+      <div class="meal-card-head">
+        <div class="mc-title">🍱 매곡테크노파크 식단표
+          <span class="mc-badge" id="mealWeekBadge">불러오는 중</span>
+        </div>
+        <a class="mc-link" href="https://www.stxfood.com/archives/menu/list" target="_blank">전체보기 →</a>
+      </div>
+      <div class="meal-tabs">
+        <button class="meal-tab active" id="mealTabLunch" onclick="switchMealTab('lunch')">점심 (Lunch)</button>
+        <button class="meal-tab" id="mealTabDinner" onclick="switchMealTab('dinner')">저녁 (Dinner)</button>
+        <button class="meal-tab" id="mealTabImg" onclick="switchMealTab('img')">주간 식단표</button>
+      </div>
+      <div id="mealBody" class="meal-body">
+        <div class="meal-loading">식단 정보를 불러오는 중...</div>
+      </div>
+    </div>
+
   </div>
 
   <div class="stat-grid">
@@ -272,8 +459,13 @@
 
   <div class="task-list-header">
     <h2 class="section-title" id="taskListTitle" style="margin:0;">처리 예정 업무 <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(마감일 순)</span></h2>
-    <div style="display:flex; gap:8px;">
+    <div style="display:flex; gap:8px; align-items:center;">
+      <div class="view-toggle" id="viewToggle" style="display:none;">
+        <button id="vtList" class="on" onclick="setViewMode('list')">목록</button>
+        <button id="vtCal" onclick="setViewMode('calendar')">🗓️ 캘린더</button>
+      </div>
       <button class="add-task-btn" id="openGuiBtn" style="background:var(--purple); display:none;">📥 전표 생성기 열기</button>
+      <button class="add-task-btn" id="openPurchaseBtn" style="background:var(--blue); display:none;">🛒 구매 시스템 열기</button>
       <button class="add-task-btn" id="addTaskBtn">+ 업무 추가</button>
     </div>
   </div>
@@ -286,7 +478,46 @@
   <div class="progress-card" id="taskProgressWrap" style="display:none;"></div>
   <div class="filter-tabs" id="taskFilterWrap" style="display:none;"></div>
   <div class="task-card" id="taskList"></div>
+  <div id="calendarView" style="display:none;"></div>
 </main>
+
+<!-- 설정 모달 -->
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettings()">
+  <div class="modal">
+    <h3>⚙️ 설정</h3>
+    <p class="modal-sub">표시 정보와 데이터 관리를 한곳에서 설정합니다.</p>
+
+    <div class="set-section">🏷️ 표시 정보</div>
+    <div class="set-field"><label>사용자 이름 (인사말에 표시)</label><input type="text" id="setUserName" placeholder="예: 아스터"></div>
+    <div class="set-grid">
+      <div class="set-field"><label>회사명</label><input type="text" id="setCompany" placeholder="예: 수산이앤에스"></div>
+      <div class="set-field"><label>기본 사업장</label><input type="text" id="setSite" placeholder="예: 본사"></div>
+    </div>
+
+    <div class="set-section">💾 데이터 관리</div>
+    <div class="set-row">
+      <div class="info">클라우드 연결 상태 <b id="setCloudState">확인 중…</b></div>
+      <button class="set-btn line" onclick="recheckCloud()">새로고침</button>
+    </div>
+    <div class="set-row">
+      <div class="info">전체 데이터 백업<br><span style="color:var(--t3); font-size:11.5px;">모든 시스템(업무·구매·피복·휴양 등)을 하나의 JSON으로 저장</span></div>
+      <button class="set-btn" onclick="backupAll()">⬇ 전체 백업</button>
+    </div>
+
+    <div class="set-section">🔗 시스템 바로가기</div>
+    <div class="set-links">
+      <button class="set-link" onclick="window.open('purchase.html','_blank')">🛒 구매계약 시스템</button>
+      <button class="set-link" onclick="window.open('uniform.html','_blank')">🧥 피복 관리</button>
+      <button class="set-link" onclick="window.open('resort.html','_blank')">🏝️ 휴양시설 관리</button>
+      <button class="set-link" onclick="openVoucherGui()">📥 전표 생성기</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="set-btn line" onclick="closeSettings()">취소</button>
+      <button class="set-btn" onclick="saveSettings()">저장</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const CATS = {
@@ -354,6 +585,7 @@ const STORAGE_KEY = 'gongmu_tasks_v1';
 
 // ===================== 월간업무 월별 처리 현황 =====================
 const CURRENT_YM = '2026-06';
+const TODAY_DAY = 16;
 let selectedMonth = CURRENT_YM;
 
 function monthlyStatusOf(t, ym){
@@ -406,6 +638,57 @@ function currentStatus(t){
   return t.cat==='monthly' ? monthlyStatusOf(t, CURRENT_YM) : t.status;
 }
 
+/* ============== Supabase 클라우드 동기화 ============== */
+const SB_URL = 'https://vvyqldyljajlmtydtqdf.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2eXFsZHlsamFqbG10eWR0cWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Nzc4NTQsImV4cCI6MjA5NzI1Mzg1NH0.YakWHeL5ZZK7RZ9K6fwxNECy02uwikoHYdRT-rSpLKc';
+const SB_REST = SB_URL + '/rest/v1/app_store';
+const SB_HEADERS = { apikey:SB_KEY, Authorization:'Bearer '+SB_KEY, 'Content-Type':'application/json' };
+
+function setSyncStatus(state){
+  const b = document.getElementById('syncBadge'); if(!b) return;
+  const map = { online:['online','☁ 연결됨'], saving:['saving','💾 저장 중…'], loading:['loading','☁ 연결 중…'], offline:['offline','⚠ 오프라인(로컬)'] };
+  const [cls,txt] = map[state] || map.loading;
+  b.className = 'sync-badge ' + cls; b.textContent = txt;
+}
+async function sbGet(key){
+  try{
+    const r = await fetch(`${SB_REST}?key=eq.${encodeURIComponent(key)}&select=value`, { headers:SB_HEADERS });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    return rows.length ? rows[0].value : null;
+  }catch(e){ return undefined; }
+}
+async function sbSet(key, value){
+  try{
+    const r = await fetch(`${SB_REST}?on_conflict=key`, {
+      method:'POST', headers:{ ...SB_HEADERS, Prefer:'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value, updated_at:new Date().toISOString() }),
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return true;
+  }catch(e){ return false; }
+}
+let _pushTimer = null;
+function sbPush(value){
+  setSyncStatus('saving');
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(async ()=>{
+    const ok = await sbSet(STORAGE_KEY, value);
+    setSyncStatus(ok ? 'online' : 'offline');
+  }, 600);
+}
+async function sbInit(){
+  setSyncStatus('loading');
+  const cloud = await sbGet(STORAGE_KEY);
+  if(cloud===undefined){ setSyncStatus('offline'); return; }
+  if(Array.isArray(cloud) && cloud.length){
+    TASKS = cloud; try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(TASKS)); }catch(e){}
+    setSyncStatus('online'); renderAll();
+  } else if(cloud===null){
+    await sbSet(STORAGE_KEY, TASKS); setSyncStatus('online');
+  } else { setSyncStatus('online'); }
+}
+
 function loadTasks(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -418,6 +701,7 @@ function loadTasks(){
 }
 function saveTasks(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(TASKS)); }catch(e){}
+  sbPush(TASKS);
 }
 
 let TASKS = loadTasks();
@@ -572,6 +856,9 @@ function openVoucherGui(title){
 // 업무 제목 ↔ 별도 관리 시스템(앱) 연결 (카테고리 무관)
 const APP_LINKS = {
   '피복관리': { url:'uniform.html', label:'피복관리 열기', icon:'🧥' },
+  '2026년 구매계약 관리': { url:'purchase.html?type=purchase', label:'구매계약 시스템', icon:'🛒' },
+  '외주계약 정리 리스트 관리': { url:'purchase.html?type=service', label:'외주용역 시스템', icon:'🔧' },
+  '휴양시설 이용료 처리': { url:'resort.html', label:'휴양시설 신청관리', icon:'🏝️' },
 };
 function openAppLink(title){
   const cfg = APP_LINKS[title];
@@ -666,6 +953,14 @@ function renderTaskList(){
   const catItems = activeCat==='all' ? TASKS.slice() : TASKS.filter(t=>t.cat===activeCat);
 
   document.getElementById('openGuiBtn').style.display = (activeCat==='monthly') ? '' : 'none';
+  document.getElementById('openPurchaseBtn').style.display = (activeCat==='purchase') ? '' : 'none';
+
+  // 캘린더 보기 토글: 월간업무에서만 노출
+  const isMonthlyCat = activeCat==='monthly';
+  document.getElementById('viewToggle').style.display = isMonthlyCat ? '' : 'none';
+  if(!isMonthlyCat) viewMode = 'list';
+  document.getElementById('vtList').classList.toggle('on', viewMode==='list');
+  document.getElementById('vtCal').classList.toggle('on', viewMode==='calendar');
 
   const monthSwitchWrap = document.getElementById('monthSwitchWrap');
   if(activeCat==='monthly'){
@@ -675,6 +970,20 @@ function renderTaskList(){
   }else{
     monthSwitchWrap.style.display = 'none';
   }
+
+  // 캘린더 모드(월간업무)면 캘린더만 렌더
+  const calView = document.getElementById('calendarView');
+  if(isMonthlyCat && viewMode==='calendar'){
+    wrap.style.display = 'none';
+    document.getElementById('taskProgressWrap').style.display = 'none';
+    document.getElementById('taskFilterWrap').style.display = 'none';
+    calView.style.display = '';
+    title.innerHTML = `${CATS.monthly.name} 캘린더 <span style="color:var(--t3); font-weight:500; font-size:12.5px;">(${fmtYMLabel(selectedMonth)})</span>`;
+    renderCalendar();
+    return;
+  }
+  wrap.style.display = '';
+  calView.style.display = 'none';
 
   renderProgressAndFilters(catItems);
 
@@ -767,13 +1076,326 @@ function setActive(key){
 }
 
 fmtDate();
+
+/* ============== 설정 ============== */
+const SETTINGS_KEY = 'app_settings_v1';
+let SETTINGS = { userName:'아스터', company:'수산이앤에스', site:'' };
+try{ const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null'); if(s && typeof s==='object') SETTINGS = {...SETTINGS, ...s}; }catch(e){}
+function applySettings(){
+  const nm = (SETTINGS.userName||'').trim();
+  document.querySelector('.greet').textContent = `안녕하세요, ${nm?nm+'님':'반갑습니다'} 👋`;
+  if(SETTINGS.company){ const pn = document.querySelector('.profile .name'); if(pn) pn.textContent = SETTINGS.company; }
+}
+function openSettings(){
+  document.getElementById('setUserName').value = SETTINGS.userName||'';
+  document.getElementById('setCompany').value = SETTINGS.company||'';
+  document.getElementById('setSite').value = SETTINGS.site||'';
+  recheckCloud();
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); }
+function saveSettings(){
+  SETTINGS.userName = document.getElementById('setUserName').value.trim();
+  SETTINGS.company = document.getElementById('setCompany').value.trim();
+  SETTINGS.site = document.getElementById('setSite').value.trim();
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(SETTINGS)); }catch(e){}
+  sbSet(SETTINGS_KEY, SETTINGS);
+  applySettings();
+  closeSettings();
+}
+async function recheckCloud(){
+  const el = document.getElementById('setCloudState'); if(!el) return;
+  el.textContent = '확인 중…';
+  const r = await sbGet(STORAGE_KEY);
+  el.textContent = (r===undefined) ? '⚠ 오프라인' : '☁ 연결됨';
+  el.style.color = (r===undefined) ? 'var(--orange)' : 'var(--green)';
+}
+async function backupAll(){
+  const keys = ['gongmu_tasks_v1','purchase_cases_v1','pibok_items_v1','pibok_txns_v1','resort_apps_v1','resort_history_v1','app_settings_v1'];
+  const out = { _type:'soosan-total-backup', _at:new Date().toISOString(), data:{} };
+  let okCount = 0;
+  for(const k of keys){ const v = await sbGet(k); if(v!==undefined && v!==null){ out.data[k]=v; okCount++; } }
+  const blob = new Blob([JSON.stringify(out,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `수산총무_전체백업_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  alert(`전체 백업 완료 (${okCount}개 시스템 데이터 저장).`);
+}
+
+/* ============== 캘린더 보기 ============== */
+let viewMode = 'list';
+function setViewMode(m){
+  viewMode = m;
+  document.getElementById('vtList').classList.toggle('on', m==='list');
+  document.getElementById('vtCal').classList.toggle('on', m==='calendar');
+  openMenuId = null;
+  renderTaskList();
+}
+function renderCalendar(){
+  const host = document.getElementById('calendarView');
+  const [y,m] = selectedMonth.split('-').map(Number);
+  const firstDow = new Date(y, m-1, 1).getDay();
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthly = TASKS.filter(t=>t.cat==='monthly');
+  // 날짜별 업무 모으기
+  const byDay = {};
+  monthly.forEach(t=>{
+    let d = t.sortDay || 1; if(d>lastDay) d = lastDay;
+    (byDay[d] = byDay[d] || []).push(t);
+  });
+  const dows = ['일','월','화','수','목','금','토'];
+  let html = '<div class="calendar-wrap"><div class="cal-grid">';
+  dows.forEach((d,i)=> html += `<div class="cal-dow ${i===0?'sun':i===6?'sat':''}">${d}</div>`);
+  const cells = Math.ceil((firstDow+lastDay)/7)*7;
+  for(let i=0;i<cells;i++){
+    const dayNum = i - firstDow + 1;
+    if(dayNum<1 || dayNum>lastDay){ html += '<div class="cal-cell blank"></div>'; continue; }
+    const dow = (firstDow+dayNum-1)%7;
+    const isToday = (selectedMonth===CURRENT_YM && dayNum===TODAY_DAY);
+    const chips = (byDay[dayNum]||[]).map(t=>{
+      const st = effStatus(t);
+      return `<div class="cal-chip ${st}" title="${esc(t.title)} (${st==='done'?'완료':st==='doing'?'진행중':'대기'})" onclick="calChipClick('${t.id}')">${esc(t.title)}</div>`;
+    }).join('');
+    html += `<div class="cal-cell ${isToday?'today':''}">
+      <div class="cal-daynum ${dow===0?'sun':dow===6?'sat':''}">${dayNum}</div>${chips}</div>`;
+  }
+  html += '</div><div class="cal-legend">'
+    + '<span><i class="cal-dot" style="background:#1DB67F;"></i>완료</span>'
+    + '<span><i class="cal-dot" style="background:#3182F6;"></i>진행중</span>'
+    + '<span><i class="cal-dot" style="background:#8B95A1;"></i>대기</span>'
+    + '<span style="color:var(--t3);">업무를 클릭하면 상태가 대기→진행중→완료 순으로 바뀝니다.</span></div></div>';
+  host.innerHTML = html;
+}
+function calChipClick(id){
+  const t = TASKS.find(x=>x.id===id); if(!t) return;
+  const order = ['wait','doing','done'];
+  const cur = effStatus(t);
+  const next = order[(order.indexOf(cur)+1)%3];
+  setStatus(id, next);
+}
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+applySettings();
 renderAll();
+sbInit();
+
+/* ============================================================
+   날씨 위젯  (Open-Meteo 무료 API, 울산 북구 매곡동)
+   ============================================================ */
+const WEATHER_LAT = 35.5665;
+const WEATHER_LON = 129.3614;
+
+const WMO_CODE = {
+  0:'맑음',1:'대체로 맑음',2:'일부 흐림',3:'흐림',
+  45:'안개',48:'안개(서리)',
+  51:'이슬비',53:'이슬비',55:'이슬비(강)',
+  61:'비',63:'비(중)',65:'비(강)',
+  71:'눈',73:'눈(중)',75:'눈(강)',
+  80:'소낙비',81:'소낙비(중)',82:'소낙비(강)',
+  95:'뇌우',96:'뇌우+우박',99:'뇌우+우박(강)'
+};
+const WMO_ICON = {
+  0:'☀️',1:'🌤️',2:'⛅',3:'☁️',
+  45:'🌫️',48:'🌫️',
+  51:'🌧️',53:'🌧️',55:'🌧️',
+  61:'🌧️',63:'🌧️',65:'🌧️',
+  71:'❄️',73:'❄️',75:'❄️',
+  80:'🌦️',81:'🌦️',82:'⛈️',
+  95:'⛈️',96:'⛈️',99:'⛈️'
+};
+
+async function loadWeather(){
+  try{
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude='+WEATHER_LAT+'&longitude='+WEATHER_LON
+      + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m'
+      + '&daily=temperature_2m_max,temperature_2m_min'
+      + '&timezone=Asia%2FSeoul&forecast_days=1';
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d = await res.json();
+    const c = d.current;
+    const daily = d.daily;
+    const code = c.weather_code;
+    const icon = WMO_ICON[code] || '🌤️';
+    const desc = WMO_CODE[code] || '날씨 정보 없음';
+    const temp = Math.round(c.temperature_2m);
+    const feel = Math.round(c.apparent_temperature);
+    const humid = c.relative_humidity_2m;
+    const wind = c.wind_speed_10m.toFixed(1);
+    const tmax = Math.round(daily.temperature_2m_max[0]);
+    const tmin = Math.round(daily.temperature_2m_min[0]);
+    document.getElementById('weatherContent').className = '';
+    document.getElementById('weatherContent').innerHTML =
+      '<div class="weather-main">'
+      + '<div class="weather-icon">'+icon+'</div>'
+      + '<div>'
+      + '<div class="weather-temp">'+temp+'<sup>°C</sup></div>'
+      + '<div class="weather-desc">'+desc+' &nbsp;·&nbsp; 체감 '+feel+'°C</div>'
+      + '</div></div>'
+      + '<div class="weather-details">'
+      + '<div class="weather-detail-item"><div class="wd-val">'+tmax+'° / '+tmin+'°</div><div class="wd-lbl">최고 / 최저</div></div>'
+      + '<div class="weather-detail-item"><div class="wd-val">'+humid+'%</div><div class="wd-lbl">습도</div></div>'
+      + '<div class="weather-detail-item"><div class="wd-val">'+wind+'m/s</div><div class="wd-lbl">풍속</div></div>'
+      + '</div>';
+    const now = new Date();
+    document.getElementById('weatherUpdate').textContent =
+      '마지막 업데이트: '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  }catch(e){
+    document.getElementById('weatherContent').innerHTML =
+      '<div class="weather-loading">날씨 정보를 불러올 수 없습니다.<br><small>'+e.message+'</small></div>';
+  }
+}
+
+/* ============================================================
+   식단표 위젯  (stxfood.com 울산테크노매곡)
+   ============================================================ */
+const MEAL_DATA = {
+  '2026-06-16':{
+    lunch:['쌀밥/잡곡밥','얼갈이국','닭고추장볶음','감자크로켓·케찹','홍자반','배추김치/깍두기'],
+    dinner:['쌀밥','육개장','참치야채계란찜','미니새송이볶음','마늘종절임','배추김치']
+  },
+  '2026-06-17':{
+    lunch:['쌀밥','소고기된장찌개','김치전','도토리묵야채무침','부추겉절이','배추김치/깍두기'],
+    dinner:['쌀밥','북어국','부대볶음','알감자조림','오이깍두무침','배추김치']
+  },
+  '2026-06-18':{
+    lunch:['쌀밥/잡곡밥','어묵국','치킨까스·어니언소스','해물볶음우동','양배추사라다','배추김치/깍두기'],
+    dinner:['쌀밥','동태알탕','너비아니구이','브로컬리두부무침','간장고추절임','배추김치']
+  },
+  '2026-06-19':{
+    lunch:['쌀밥/잡곡밥','콩나물국','제육간장불고기','미역줄기볶음','양배추사라다','배추김치/깍두기'],
+    dinner:['쌀밥','옹심이수제비국','미트볼떡조림','도라지진미채무침','양념깻잎지','배추김치']
+  },
+  '2026-06-20':{
+    lunch:['쌀밥/잡곡밥','짬뽕국','짜장소스','돈채피망볶음','중국식오이무침','배추김치'],
+    dinner:['쌀밥','순살감자탕','고등어구이','매콤감자조림','깻잎지','배추김치']
+  },
+  '2026-06-21':{
+    lunch:['쌀밥','잔치국수','순살닭강정','오복채무침','사과주스','배추김치'],
+    dinner:null
+  },
+  '2026-06-22':{
+    lunch:['쌀밥/잡곡밥','양송이크림스프','알떡함박스테이크','토마토스파게티','그린샐러드·요거트D','배추김치'],
+    dinner:['쌀밥','근대된장국','닭살떡볶음','콩나물무침','양파절임','배추김치']
+  },
+  '2026-06-23':{
+    lunch:['쌀밥','얼갈이된장국','버섯돈육불고기','햄감자채볶음','상추깻잎무침','배추김치'],
+    dinner:['쌀밥','호박고추장찌개','옛날소세지전','우영조림','부추겉절이','배추김치']
+  },
+  '2026-06-24':{
+    lunch:['쌀밥/잡곡밥','어묵국','치킨까스·돈까스S','줄면야채무침','마카로니샐러드','배추김치'],
+    dinner:['쌀밥','콩비지찌개','돈육장조림','새우살애호박볶음','궁채절임','배추김치']
+  },
+  '2026-06-25':{
+    lunch:['쌀밥','얼근닭개장','맛살팽이버섯전','매콤두부조림','열무겉절이','배추김치'],
+    dinner:['쌀밥','순두부찌개','미트볼떡조림','퓨실리샐러드','오이지무침','배추김치']
+  },
+  '2026-06-26':{
+    lunch:['쌀밥/잡곡밥','유부장국','하이라이스','치킨너겟·머스터드','치커리겉절이','하루견과','배추김치'],
+    dinner:['쌀밥','만두국','고등어구이','매콤감자조림','깻잎지','배추김치']
+  },
+  '2026-06-27':{
+    lunch:['쌀밥','잔치국수','고구마마튀김','부추겉절이','오렌지주스','배추김치'],
+    dinner:null
+  }
+};
+
+const MEAL_WEEK_IMAGES = [
+  {
+    label:'6월 3주 (16일~21일)',
+    url:'https://www.stxfood.com/_data/archives/202606/11/baf6fc22858c793ef32f45ae3cedcbb8_thumb_720x720.png',
+    detailUrl:'https://www.stxfood.com/archives/menu/detail/64?row=10&block=10'
+  },
+  {
+    label:'6월 4주 (22일~27일)',
+    url:'https://www.stxfood.com/_data/archives/202606/18/8cf8d1f29e6603299b3abd94b79eda7b_thumb_720x720.png',
+    detailUrl:'https://www.stxfood.com/archives/menu/detail/68?row=10&block=10'
+  }
+];
+
+let mealTab = 'lunch';
+
+function getTodayKey(){
+  const t = new Date();
+  return {
+    key: t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'),
+    day: t.getDay()
+  };
+}
+
+function switchMealTab(tab){
+  mealTab = tab;
+  ['lunch','dinner','img'].forEach(function(t){
+    const el = document.getElementById('mealTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.classList.toggle('active', t===tab);
+  });
+  renderMealBody();
+}
+
+function renderMealBody(){
+  const info = getTodayKey();
+  const key = info.key; const day = info.day;
+  const data = MEAL_DATA[key];
+  const body = document.getElementById('mealBody');
+  const dayNames = ['일','월','화','수','목','금','토'];
+
+  if(mealTab === 'img'){
+    let html = '';
+    MEAL_WEEK_IMAGES.forEach(function(w){
+      html += '<div class="meal-img-wrap">'
+        + '<div class="meal-week-title">📅 '+w.label
+        + ' <a href="'+w.detailUrl+'" target="_blank" style="font-size:11px;color:var(--blue);font-weight:600;text-decoration:none;">사이트에서 보기 ↗</a></div>'
+        + '<a href="'+w.detailUrl+'" target="_blank"><img src="'+w.url+'" alt="'+w.label+' 식단표" loading="lazy"></a>'
+        + '</div>';
+    });
+    body.innerHTML = html;
+    return;
+  }
+
+  if(!data){
+    body.innerHTML = '<div class="meal-empty">🚫 오늘('+key+') 식단 정보가 없습니다.<br><small style="color:var(--t3);">STX 푸드 사이트에서 확인해 주세요.</small></div>';
+    return;
+  }
+
+  const menu = mealTab === 'lunch' ? data.lunch : data.dinner;
+  if(!menu){
+    body.innerHTML = '<div class="meal-empty">오늘 '+(mealTab==='dinner'?'저녁':'점심')+' 식단 정보가 없습니다.</div>';
+    return;
+  }
+
+  const typeLabel = mealTab === 'lunch' ? '점심' : '저녁';
+  let html = '<div class="meal-today-label"><span class="today-dot"></span> 오늘 '+dayNames[day]+'요일 '+typeLabel+' 메뉴 ('+key+')</div>';
+  html += '<div class="meal-menu-list">';
+  menu.forEach(function(item, idx){
+    html += '<div class="meal-menu-item'+(idx===0?' mi-main':'')+'"><span class="mi-dot"></span>'+item+'</div>';
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function initMealWidget(){
+  const info = getTodayKey();
+  const key = info.key;
+  const badge = document.getElementById('mealWeekBadge');
+  if(badge){
+    if(key >= '2026-06-22' && key <= '2026-06-27') badge.textContent = '6월 4주';
+    else if(key >= '2026-06-16' && key <= '2026-06-21') badge.textContent = '6월 3주';
+    else badge.textContent = '6월';
+  }
+  renderMealBody();
+}
+
+loadWeather();
+initMealWidget();
+setInterval(loadWeather, 10 * 60 * 1000);
 document.querySelector('.nav-item.dash').addEventListener('click', ()=> setActive('all'));
 document.getElementById('addTaskBtn').addEventListener('click', addTask);
 document.getElementById('openGuiBtn').addEventListener('click', ()=> openVoucherGui());
+document.getElementById('openPurchaseBtn').addEventListener('click', ()=> window.open('purchase.html', '_blank'));
 document.getElementById('monthPrev').addEventListener('click', ()=>{ selectedMonth = shiftMonth(selectedMonth, -1); openMenuId = null; renderTaskList(); });
 document.getElementById('monthNext').addEventListener('click', ()=>{ selectedMonth = shiftMonth(selectedMonth, 1); openMenuId = null; renderTaskList(); });
 document.getElementById('monthSwitchToday').addEventListener('click', ()=>{ selectedMonth = CURRENT_YM; openMenuId = null; renderTaskList(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
 document.addEventListener('click', (e)=>{
   if(openMenuId !== null && !e.target.closest('.row-actions') && !e.target.closest('.status-menu-inline')){
     openMenuId = null;
