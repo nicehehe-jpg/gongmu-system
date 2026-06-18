@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>가계부 - Toss Style Pro</title>
+  <title>가계부 - Toss Style Ultimate</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -36,7 +36,7 @@
       border-bottom: 1px solid var(--toss-border);
     }
     .header h1 { font-size: 18px; font-weight: 700; }
-    .back-btn { font-size: 20px; text-decoration: none; color: var(--toss-text-main); }
+    .back-btn { font-size: 20px; text-decoration: none; color: var(--toss-text-main); cursor: pointer; }
 
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
@@ -124,9 +124,15 @@
 
     .empty { text-align: center; padding: 40px 0; color: var(--toss-text-grey); font-size: 14px; }
     
-    /* 삭제 버튼 */
     .delete-btn { color: var(--toss-text-grey); font-size: 12px; border: none; background: none; cursor: pointer; margin-left: 10px; }
     .delete-btn:hover { color: var(--toss-danger); }
+
+    /* 설정 섹션 */
+    .settings-btn { font-size: 20px; cursor: pointer; }
+    .settings-list { margin-top: 10px; }
+    .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--toss-bg); border-radius: 12px; margin-bottom: 8px; }
+    .settings-item span { font-weight: 600; font-size: 14px; }
+    .settings-remove { color: var(--toss-danger); border: none; background: none; font-weight: 700; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -134,18 +140,16 @@
 <div class="header">
   <a href="index.html" class="back-btn">✕</a>
   <h1>가계부</h1>
-  <div style="width:20px"></div>
+  <div class="settings-btn" onclick="openSettings()">⚙️</div>
 </div>
 
 <div class="container">
-  <!-- 요약 카드 -->
   <div class="card">
     <p class="summary-title">이번 달 쓴 돈</p>
     <p class="summary-amount" id="totalExpense">0원</p>
     <p class="summary-diff" id="monthDiff">지난달보다 <span>0원</span> 덜 썼어요</p>
   </div>
 
-  <!-- 통계 카드 -->
   <div class="card">
     <p class="summary-title">지출 통계</p>
     <div class="chart-container">
@@ -154,7 +158,6 @@
     <div class="category-list" id="categoryList"></div>
   </div>
 
-  <!-- 최근 내역 -->
   <h2 class="history-title">최근 내역</h2>
   <div class="card" style="padding: 8px 20px;">
     <div id="historyList"></div>
@@ -178,17 +181,12 @@
 
     <div class="input-group">
       <label class="input-label">금액</label>
-      <input type="number" id="amount" class="input-field" placeholder="얼마를 썼나요?">
+      <input type="text" id="amount" class="input-field" placeholder="얼마를 썼나요?" oninput="formatAmount(this)">
     </div>
 
     <div class="input-group">
       <label class="input-label">결제 수단</label>
-      <div class="option-grid" id="methodSelect">
-        <div class="option-btn active" onclick="setMethod('현금', this)">💵 현금</div>
-        <div class="option-btn" onclick="setMethod('신용카드', this)">💳 카드</div>
-        <div class="option-btn" onclick="setMethod('계좌이체', this)">🏦 계좌</div>
-        <div class="option-btn" onclick="setMethod('체크카드', this)">🏧 체크</div>
-      </div>
+      <div class="option-grid" id="methodSelect"></div>
     </div>
 
     <div class="input-group">
@@ -214,24 +212,92 @@
   </div>
 </div>
 
+<!-- 설정 모달 -->
+<div class="modal" id="settingsModal" onclick="if(event.target==this) closeSettings()">
+  <div class="modal-content">
+    <h2 style="font-size: 18px; margin-bottom: 20px;">⚙️ 결제 수단 설정</h2>
+    <div class="input-group">
+      <label class="input-label">새 결제 수단 추가 (카드/계좌 등)</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="newMethod" class="input-field" placeholder="예: 신한카드, 월급계좌">
+        <button class="submit-btn" style="width: 80px; padding: 0;" onclick="addMethod()">추가</button>
+      </div>
+    </div>
+    <div class="settings-list" id="settingsList"></div>
+    <button class="submit-btn" style="background: var(--toss-border); color: var(--toss-text-main); margin-top: 20px;" onclick="closeSettings()">닫기</button>
+  </div>
+</div>
+
 <script>
-  let data = JSON.parse(localStorage.getItem('toss_ledger_v2') || '[]');
+  let data = JSON.parse(localStorage.getItem('toss_ledger_v3') || '[]');
+  let methods = JSON.parse(localStorage.getItem('toss_methods') || '["💵 현금", "💳 카드", "🏦 계좌"]');
   let currentType = 'expense';
   let currentCat = '식비';
-  let currentMethod = '현금';
+  let currentMethod = methods[0];
   let chart = null;
 
   const icons = {
     '식비': '🍽️', '교통': '🚗', '쇼핑': '🛍️', '의료': '🏥',
-    '문화': '🎬', '생활': '🏠', '통신': '📱', '기타': '📌', '수입': '💰',
-    '현금': '💵', '신용카드': '💳', '계좌이체': '🏦', '체크카드': '🏧'
+    '문화': '🎬', '생활': '🏠', '통신': '📱', '기타': '📌', '수입': '💰'
   };
+
+  function formatAmount(el) {
+    let value = el.value.replace(/[^0-9]/g, '');
+    if(value) {
+      el.value = parseInt(value).toLocaleString();
+    } else {
+      el.value = '';
+    }
+  }
 
   function openModal() { 
     document.getElementById('inputModal').classList.add('active'); 
     document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    renderMethodOptions();
   }
   function closeModal() { document.getElementById('inputModal').classList.remove('active'); }
+
+  function openSettings() {
+    document.getElementById('settingsModal').classList.add('active');
+    renderSettingsList();
+  }
+  function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+
+  function renderMethodOptions() {
+    const grid = document.getElementById('methodSelect');
+    grid.innerHTML = methods.map((m, idx) => `
+      <div class="option-btn ${m === currentMethod ? 'active' : ''}" onclick="setMethod('${m}', this)">${m}</div>
+    `).join('');
+    if(!methods.includes(currentMethod)) currentMethod = methods[0];
+  }
+
+  function renderSettingsList() {
+    const list = document.getElementById('settingsList');
+    list.innerHTML = methods.map((m, idx) => `
+      <div class="settings-item">
+        <span>${m}</span>
+        <button class="settings-remove" onclick="removeMethod(${idx})">삭제</button>
+      </div>
+    `).join('');
+  }
+
+  function addMethod() {
+    const val = document.getElementById('newMethod').value.trim();
+    if(!val) return;
+    methods.push(val);
+    localStorage.setItem('toss_methods', JSON.stringify(methods));
+    document.getElementById('newMethod').value = '';
+    renderSettingsList();
+    renderMethodOptions();
+  }
+
+  function removeMethod(idx) {
+    if(methods.length <= 1) return alert('최소 한 개의 결제 수단은 있어야 합니다.');
+    methods.splice(idx, 1);
+    localStorage.setItem('toss_methods', JSON.stringify(methods));
+    renderSettingsList();
+    renderMethodOptions();
+  }
 
   function setType(type, el) {
     currentType = type;
@@ -252,22 +318,22 @@
   }
 
   function saveEntry() {
-    const amount = document.getElementById('amount').value;
+    const amountStr = document.getElementById('amount').value.replace(/,/g, '');
     const date = document.getElementById('date').value;
     const desc = document.getElementById('desc').value || currentCat;
-    if(!amount || !date) return alert('금액과 날짜를 입력해주세요');
+    if(!amountStr || !date) return alert('금액과 날짜를 입력해주세요');
 
     data.unshift({
       id: Date.now(),
       type: currentType,
       cat: currentType === 'income' ? '수입' : currentCat,
       method: currentMethod,
-      amount: parseInt(amount),
+      amount: parseInt(amountStr),
       desc: desc,
       date: date
     });
 
-    localStorage.setItem('toss_ledger_v2', JSON.stringify(data));
+    localStorage.setItem('toss_ledger_v3', JSON.stringify(data));
     updateUI();
     closeModal();
     
@@ -278,13 +344,13 @@
   function deleteEntry(id) {
     if(!confirm('삭제하시겠습니까?')) return;
     data = data.filter(i => i.id !== id);
-    localStorage.setItem('toss_ledger_v2', JSON.stringify(data));
+    localStorage.setItem('toss_ledger_v3', JSON.stringify(data));
     updateUI();
   }
 
   function updateUI() {
     const now = new Date();
-    const currentMonthStr = now.toISOString().substring(0, 7); // "2026-06"
+    const currentMonthStr = now.toISOString().substring(0, 7);
     
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthStr = lastMonth.toISOString().substring(0, 7);
@@ -313,7 +379,7 @@
       list.innerHTML = '<div class="empty">내역이 없어요</div>';
       return;
     }
-    list.innerHTML = items.slice(0, 20).map(i => `
+    list.innerHTML = items.slice(0, 30).map(i => `
       <div class="history-item">
         <div class="hist-main">
           <span class="hist-desc">${i.desc}</span>
