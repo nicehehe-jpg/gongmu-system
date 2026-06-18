@@ -92,12 +92,12 @@
   .stat-card .lbl{font-size:12.5px; color:var(--t3); margin-top:4px; font-weight:500;}
 
   .rate-card{
-    background:var(--card); border-radius:20px; padding:22px 24px; margin-bottom:22px;
+    background:var(--card); border-radius:20px; padding:16px 20px; margin-bottom:22px;
     box-shadow:0 1px 2px rgba(0,0,0,0.03);
   }
   .rate-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
   .rate-head .title{font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:7px;}
-  .rate-head .pct{font-size:20px; font-weight:800; color:var(--blue);}
+  .rate-head .pct{font-size:16px; font-weight:800; color:var(--blue);}
   .bar-bg{height:10px; background:#EEF1F4; border-radius:20px; overflow:hidden;}
   .bar-fill{height:100%; background:linear-gradient(90deg,var(--blue),#5B9BFF); border-radius:20px; transition:width .4s;}
   .rate-foot{display:flex; justify-content:space-between; font-size:12px; color:var(--t3); margin-top:8px;}
@@ -219,7 +219,7 @@
   .set-field input{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:11px; font-size:14px; font-family:inherit; background:var(--bg); color:var(--t1);}
   .set-field input:focus{outline:none; border-color:var(--blue); background:#fff;}
   .set-grid{display:grid; grid-template-columns:1fr 1fr; gap:11px;}
-  .set-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:var(--bg); border-radius:12px; margin-bottom:8px;}
+  .set-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:var(--bg); border-radius:12px; margin-bottom:4px;}
   .set-row .info{font-size:12.5px; color:var(--t2);} .set-row .info b{color:var(--t1);}
   .set-links{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .set-link{display:flex; align-items:center; gap:8px; padding:12px 14px; background:var(--bg); border:1px solid var(--line); border-radius:12px; font-size:13px; font-weight:700; color:var(--t1); cursor:pointer; font-family:inherit; text-align:left;}
@@ -256,12 +256,12 @@
 
   /* ===== 날씨 + 식단표 위젯 ===== */
   .info-widget-row{
-    display:grid; grid-template-columns:1fr 1.6fr; gap:14px; margin-bottom:22px;
+    display:grid; grid-template-columns:1fr 2fr; max-width:1000px; gap:14px; margin-bottom:22px;
   }
   /* 날씨 카드 */
   .weather-card{
     background:linear-gradient(135deg,#1a73e8 0%,#0d47a1 100%);
-    border-radius:20px; padding:22px 24px;
+    border-radius:20px; padding:16px 20px;
     color:#fff; box-shadow:0 4px 16px rgba(26,115,232,0.25);
     display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden;
   }
@@ -282,9 +282,9 @@
   .weather-main{
     display:flex; align-items:center; gap:14px;
   }
-  .weather-icon{ font-size:44px; line-height:1; }
-  .weather-temp{ font-size:42px; font-weight:800; line-height:1; }
-  .weather-temp sup{ font-size:20px; font-weight:600; vertical-align:super; }
+  .weather-icon{ font-size:32px; line-height:1; }
+  .weather-temp{ font-size:32px; font-weight:800; line-height:1; }
+  .weather-temp sup{ font-size:16px; font-weight:600; vertical-align:super; }
   .weather-desc{ font-size:13px; opacity:.85; margin-top:3px; }
   .weather-details{
     display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
@@ -297,7 +297,7 @@
   .weather-loading{ opacity:.7; font-size:13px; text-align:center; padding:20px 0; }
 
   /* 식단표 카드 */
-  .meal-card{
+  .meal-card{ max-height:280px; 
     background:var(--card); border-radius:20px; padding:0;
     box-shadow:0 1px 2px rgba(0,0,0,0.03); overflow:hidden;
   }
@@ -352,7 +352,7 @@
   .meal-img-wrap img{ width:100%; border-radius:12px; cursor:pointer; }
   .meal-img-wrap img:hover{ opacity:.92; }
   .meal-week-title{
-    font-size:12px; font-weight:700; color:var(--t2); margin-bottom:8px;
+    font-size:12px; font-weight:700; color:var(--t2); margin-bottom:4px;
     display:flex; align-items:center; gap:6px;
   }
   .meal-loading{ text-align:center; color:var(--t3); font-size:13px; padding:30px 0; }
