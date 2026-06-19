@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매업무 관리 시스템 | 수산이앤에스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+  :root{
+    --bg:#F2F4F6; --card:#fff; --t1:#191F28; --t2:#4E5968; --t3:#8B95A1;
+    --blue:#3182F6; --blue-bg:#EBF2FF; --green:#1DB67F; --green-bg:#E6F9F0;
+    --orange:#FF9800; --orange-bg:#FFF4E5; --red:#F04452; --red-bg:#FDEAEC;
+    --purple:#6C5CE7; --purple-bg:#F0EEFF; --line:#E5E8EB;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0 auto; max-width:1180px; background:var(--bg); color:var(--t1);
+    font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    padding:28px 32px 80px;
+  }
+  .back-link{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--t3); text-decoration:none; font-weight:600; margin-bottom:14px;}
+  .back-link:hover{color:var(--blue);}
+  .page-head{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:22px;}
+  h1{font-size:24px; font-weight:800; margin:0 0 4px;}
+  .page-sub{font-size:13.5px; color:var(--t2); margin:0;}
+  .head-btns{display:flex; gap:8px; flex-wrap:wrap;}
+
+  .btn{background:var(--blue); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .btn:hover{background:#1B6FE0;}
+  .btn.line{background:var(--card); color:var(--t2); border:1px solid var(--line);}
+  .btn.line:hover{background:#F7F9FB; color:var(--t1);}
+  .btn.green{background:var(--green);} .btn.green:hover{background:#17a070;}
+  .btn.sm{padding:6px 12px; font-size:12px; border-radius:8px;}
+  .sync-badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; margin-left:6px; vertical-align:middle;}
+  .sync-badge.online{background:var(--green-bg); color:var(--green);}
+  .sync-badge.saving{background:var(--blue-bg); color:var(--blue);}
+  .sync-badge.loading{background:var(--bg); color:var(--t3);}
+  .sync-badge.offline{background:var(--orange-bg); color:var(--orange);}
+
+  /* 통계 */
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
+  .stat-card{background:var(--card); border-radius:20px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:.15s;}
+  .stat-card:hover{box-shadow:0 8px 20px rgba(25,31,40,.08); transform:translateY(-2px);}
+  .stat-card .icon-circle{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:14px;}
+  .stat-card .num{font-size:24px; font-weight:800; line-height:1;}
+  .stat-card .num small{font-size:14px; font-weight:700; color:var(--t3); margin-left:2px;}
+  .stat-card .lbl{font-size:12.5px; color:var(--t3); margin-top:5px; font-weight:500;}
+
+  /* 월 네비 + 탭 */
+  .controls{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;}
+  .month-nav{display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:5px 8px;}
+  .month-nav button.arr{background:none; border:none; font-size:17px; color:var(--t2); cursor:pointer; padding:2px 8px; border-radius:8px; font-weight:700;}
+  .month-nav button.arr:hover{background:var(--bg);}
+  .month-nav input{border:none; background:none; font-size:14px; font-weight:700; font-family:inherit; color:var(--t1); cursor:pointer;}
+  .month-nav input:disabled{color:var(--t3);}
+  .all-btn{background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:6px 12px; font-size:12.5px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit;}
+  .all-btn.on{background:var(--blue); color:#fff; border-color:var(--blue);}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+  .tab{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:8px 16px; font-size:13px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit;}
+  .tab:hover{background:#F7F9FB;}
+  .tab.active{background:var(--blue); color:#fff; border-color:var(--blue);}
+
+  /* 구매 건 카드 */
+  .case-grid{display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:30px;}
+  .case-card{background:var(--card); border-radius:20px; padding:20px 22px; box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .case-head{display:flex; align-items:flex-start; gap:13px; margin-bottom:14px;}
+  .case-icon{width:42px; height:42px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;}
+  .case-head .grow{flex:1; min-width:0;}
+  .case-title-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+  .case-title{font-size:15.5px; font-weight:800;}
+  .type-badge{font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;}
+  .status-badge{font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;}
+  .st-wait{background:var(--bg); color:var(--t3);}
+  .st-doing{background:var(--blue-bg); color:var(--blue);}
+  .st-done{background:var(--green-bg); color:var(--green);}
+  .case-meta{font-size:12.5px; color:var(--t2); margin-top:3px;}
+  .case-meta .k{color:var(--t3);}
+  .case-meta b{font-weight:700; color:var(--t1);}
+  .case-acts{display:flex; gap:4px; flex-shrink:0;}
+  .icon-btn{background:none; border:none; cursor:pointer; color:var(--t3); font-size:14px; padding:6px 8px; border-radius:8px;}
+  .icon-btn:hover{background:var(--bg); color:var(--t1);}
+
+  .prog-wrap{display:flex; align-items:center; gap:11px; margin:6px 0 14px;}
+  .prog-track{flex:1; height:8px; background:var(--bg); border-radius:6px; overflow:hidden;}
+  .prog-fill{height:100%; background:var(--blue); border-radius:6px; transition:width .3s;}
+  .prog-fill.full{background:var(--green);}
+  .prog-label{font-size:12px; font-weight:700; color:var(--t2); min-width:96px; text-align:right;}
+
+  .stage-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .stage-chip{font-size:12px; font-weight:700; padding:9px 13px; border-radius:11px; border:1px solid var(--line); background:var(--bg); color:var(--t3); cursor:pointer; font-family:inherit; transition:.12s;}
+  .stage-chip:hover{transform:translateY(-1px);}
+  .stage-chip.done{background:var(--green-bg); border-color:#A8E6CD; color:var(--green);}
+  .stage-chip.na{background:#fff; border-color:var(--line); color:#C4CDD6; text-decoration:line-through;}
+  .case-note{margin-top:14px; padding-top:13px; border-top:1px solid var(--line); font-size:12.5px; color:var(--t2);}
+  .case-note .k{color:var(--t3); margin-right:5px;}
+  .doc-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; padding-top:13px; border-top:1px solid var(--line);}
+  .doc-row .doc-label{font-size:12px; color:var(--t3); font-weight:700; margin-right:2px;}
+  .doc-chip{font-size:12px; font-weight:700; padding:7px 11px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--t2); cursor:pointer; font-family:inherit;}
+  .doc-chip:hover{background:var(--blue-bg); border-color:#BBD5FF; color:var(--blue);}
+  .legend{font-size:11.5px; color:var(--t3); margin:-6px 0 16px;}
+  .filter-bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .filter-bar input[type=text]{flex:1; min-width:220px; padding:10px 13px; border:1px solid var(--line); border-radius:11px; font-size:13px; font-family:inherit; background:var(--card); color:var(--t1);}
+  .filter-bar input[type=text]:focus{outline:none; border-color:var(--blue);}
+  .filter-bar select{padding:9px 11px; border:1px solid var(--line); border-radius:11px; font-size:12.5px; font-family:inherit; background:var(--card); color:var(--t1); cursor:pointer;}
+  .filter-bar select:focus{outline:none; border-color:var(--blue);}
+  .filter-count{font-size:12.5px; color:var(--t2); font-weight:700; margin-left:2px;}
+  .legend b{color:var(--t2);}
+  .empty{background:var(--card); border-radius:20px; padding:50px; text-align:center; color:var(--t3); font-size:13.5px; box-shadow:0 1px 2px rgba(0,0,0,.03);}
+
+  /* 모달 */
+  .modal-overlay{position:fixed; inset:0; background:rgba(25,31,40,.45); z-index:100; display:none; align-items:center; justify-content:center; padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card); border-radius:24px; padding:26px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.22); animation:pop .18s ease;}
+  @keyframes pop{from{transform:translateY(8px) scale(.98); opacity:0;} to{transform:none; opacity:1;}}
+  .modal h3{font-size:18px; font-weight:800; margin:0 0 4px;}
+  .modal .modal-sub{font-size:12.5px; color:var(--t3); margin:0 0 22px; font-weight:500;}
+  .pm-field{margin-bottom:14px;}
+  .pm-field label{display:block; font-size:12.5px; font-weight:700; color:var(--t2); margin-bottom:7px;}
+  .pm-field input, .pm-field select{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:12px; font-size:14px; font-family:inherit; background:var(--bg); color:var(--t1);}
+  .pm-field input:focus, .pm-field select:focus{outline:none; border-color:var(--blue); background:#fff;}
+  .pm-field input[type=number]{text-align:right;}
+  .pm-grid{display:grid; gap:12px;}
+  .pm-grid.c2{grid-template-columns:1fr 1fr;}
+  .pm-grid.c3{grid-template-columns:1fr 1fr 1fr;}
+  .pm-grid .pm-field{margin-bottom:0;}
+  .pm-section{font-size:11.5px; font-weight:800; color:var(--t3); margin:22px 0 12px; letter-spacing:.02em; display:flex; align-items:center; gap:10px;}
+  .pm-section:first-of-type{margin-top:4px;}
+  .pm-section::after{content:''; flex:1; height:1px; background:var(--line);}
+  .doc-input{display:flex; gap:8px;}
+  .doc-input input{flex:1; min-width:0;}
+  .browse-btn{flex-shrink:0; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:0 13px; font-size:12.5px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit; white-space:nowrap;}
+  .browse-btn:hover{background:var(--blue-bg); border-color:#BBD5FF; color:var(--blue);}
+  .modal-actions{display:flex; gap:10px; margin-top:24px;}
+  .modal-actions .btn{flex:1; padding:13px; font-size:14px; border-radius:13px;}
+
+  @media(max-width:720px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .pm-grid.c3{grid-template-columns:1fr;}
+    body{padding:20px 16px 60px;}
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">‹ 총무 관리 대시보드</a>
+
+<div class="page-head">
+  <div>
+    <h1>🛒 구매업무 관리 시스템</h1>
+    <p class="page-sub">월별·구분별 구매 진행현황을 단계별로 관리합니다 · 수산이앤에스 <span id="syncBadge" class="sync-badge loading">☁ 연결 중…</span></p>
+  </div>
+  <div class="head-btns">
+    <button class="btn" onclick="openCaseModal()">+ 구매 건 추가</button>
+    <button class="btn purple sm" onclick="document.getElementById('importFile').click()">📥 엑셀 가져오기</button>
+    <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
+    <button class="btn green sm" onclick="exportCases()">📊 진행현황 엑셀</button>
+    <button class="btn line sm" onclick="backupJSON()">💾 백업</button>
+    <button class="btn line sm" onclick="document.getElementById('restoreFile').click()">📂 복원</button>
+    <input type="file" id="restoreFile" accept="application/json" style="display:none" onchange="restoreJSON(this)">
+    <button class="btn line sm" onclick="resetData()">↺ 초기화</button>
+  </div>
+</div>
+
+<!-- 통계 -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="icon-circle" style="background:var(--blue-bg); color:var(--blue);">📋</div>
+    <div class="num" id="statTotal">0<small>건</small></div>
+    <div class="lbl">전체 구매 건</div>
+  </div>
+  <div class="stat-card">
+    <div class="icon-circle" style="background:var(--orange-bg); color:var(--orange);">⏳</div>
+    <div class="num" id="statDoing">0<small>건</small></div>
+    <div class="lbl">진행중</div>
+  </div>
+  <div class="stat-card">
+    <div class="icon-circle" style="background:var(--green-bg); color:var(--green);">✅</div>
+    <div class="num" id="statDone">0<small>건</small></div>
+    <div class="lbl">완료</div>
+  </div>
+  <div class="stat-card">
+    <div class="icon-circle" style="background:var(--purple-bg); color:var(--purple);">💰</div>
+    <div class="num" id="statAmount">₩0</div>
+    <div class="lbl">계약금액 합계</div>
+  </div>
+</div>
+
+<!-- 월/구분 컨트롤 -->
+<div class="controls">
+  <div class="month-nav">
+    <button class="arr" onclick="shiftMonth(-1)">‹</button>
+    <input type="month" id="monthPick" onchange="onMonthPick()">
+    <button class="arr" onclick="shiftMonth(1)">›</button>
+    <button class="all-btn" id="allBtn" onclick="toggleAll()">전체 기간</button>
+  </div>
+  <div class="tabs" id="typeTabs"></div>
+</div>
+
+<div class="filter-bar">
+  <input type="text" id="fSearch" placeholder="🔍 건명·거래처·담당자·프로젝트·사업자번호 검색" oninput="applyFilters()">
+  <select id="fCostType" onchange="applyFilters()"><option value="all">비용구분 전체</option></select>
+  <select id="fStatus" onchange="applyFilters()">
+    <option value="all">진행상태 전체</option>
+    <option value="wait">대기</option>
+    <option value="doing">진행중</option>
+    <option value="done">완료</option>
+  </select>
+  <select id="fDept" onchange="applyFilters()"><option value="all">부서 전체</option></select>
+  <select id="fFlag" onchange="applyFilters()">
+    <option value="all">특이조건 없음</option>
+    <option value="bondMissing">보증증권 미비</option>
+    <option value="unpaid">미지급(잔여)</option>
+  </select>
+  <button class="all-btn" id="fClear" onclick="clearFilters()">필터 초기화</button>
+  <span class="filter-count" id="fCount"></span>
+</div>
+
+<div class="legend">단계 칩을 클릭하면 <b>대기 → 완료 → 해당없음</b> 순서로 바뀝니다. 진행률은 '해당없음'을 제외하고 계산됩니다. 검색·필터를 사용하면 <b>전체 기간</b>에서 찾습니다.</div>
+
+<div class="case-grid" id="caseGrid"></div>
+
+<!-- 구매 건 추가/수정 모달 -->
+<div class="modal-overlay" id="caseModal" onclick="if(event.target===this) closeCaseModal()">
+  <div class="modal">
+    <h3 id="cmTitle">구매 건 추가</h3>
+    <p class="modal-sub">계약 정보를 입력하세요. 진행단계 체크는 저장 후 카드에서 바로 할 수 있습니다.</p>
+
+    <div class="pm-section">📄 계약 정보</div>
+    <div class="pm-grid c3" style="margin-bottom:14px;">
+      <div class="pm-field"><label>종류 (구분)</label>
+        <select id="cmType">
+          <option value="purchase">구매계약</option>
+          <option value="service">외주용역계약</option>
+        </select>
+      </div>
+      <div class="pm-field"><label>비용구분</label>
+        <input type="text" id="cmCostType" list="costTypeList" placeholder="예: 재료 / 외주 / 투자 / 국책제조">
+        <datalist id="costTypeList"><option value="재료"><option value="외주"><option value="투자"><option value="국책제조"></datalist>
+      </div>
+      <div class="pm-field"><label>프로젝트 (과제)</label><input type="text" id="cmProject" placeholder="예: 2015070-…"></div>
+    </div>
+    <div class="pm-grid c3" style="margin-bottom:14px;">
+      <div class="pm-field"><label>계약시작일</label><input type="date" id="cmContractDate"></div>
+      <div class="pm-field"><label>계약종료일</label><input type="date" id="cmDueDate"></div>
+      <div class="pm-field"><label>공급가액 (계약금액·원)</label>
+        <input type="number" id="cmSupply" min="0" step="1000" placeholder="0"
+          oninput="document.getElementById('cmVat').value = Math.round((Number(this.value)||0)*0.1)">
+      </div>
+    </div>
+
+    <div class="pm-field"><label>건명 (계약명)</label><input type="text" id="cmName" placeholder="예: 기장연구로 MMIS 자재구매"></div>
+
+    <div class="pm-grid c2" style="margin-bottom:14px;">
+      <div class="pm-field"><label>부가세 (원·자동 10%)</label><input type="number" id="cmVat" min="0" step="100" placeholder="0"></div>
+      <div class="pm-field" style="display:flex; align-items:flex-end;"><div style="font-size:12px; color:var(--t3); padding-bottom:11px;">※ 계약금액(공급가액) 기준. 부가세는 참고용 자동계산</div></div>
+    </div>
+
+    <div class="pm-field">
+      <label>계약조건 (지급조건)</label>
+      <select id="cmPayTerm" onchange="togglePayTermEtc()">
+        <option value="30d">30일 이내 계약금액의 100% 현금지급</option>
+        <option value="60d">60일 이내 계약금액의 100% 현금지급</option>
+        <option value="etc">기타 (직접 입력)</option>
+      </select>
+      <input type="text" id="cmPayTermEtc" placeholder="예: 계약 후 30일 이내 30% / 납품 후 60일 이내 70%" style="margin-top:10px; display:none;">
+    </div>
+
+    <div class="pm-section">💰 지급 일정 (선급금 · 중도금 · 잔금)</div>
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:6px;">
+      <thead><tr style="color:var(--t3); font-size:11.5px;">
+        <th style="text-align:left; padding:4px 6px; font-weight:700;">구분</th>
+        <th style="text-align:left; padding:4px 6px; font-weight:700;">금액(원)</th>
+        <th style="text-align:left; padding:4px 6px; font-weight:700;">지급율(%)</th>
+        <th style="text-align:left; padding:4px 6px; font-weight:700;">지급(예정)일</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding:3px 6px; font-weight:700; color:var(--t2);">선급금</td>
+          <td style="padding:3px 4px;"><input type="number" id="cmPrepayAmt" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="number" id="cmPrepayRate" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="date" id="cmPrepayDate" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg);"></td></tr>
+        <tr><td style="padding:3px 6px; font-weight:700; color:var(--t2);">중도금</td>
+          <td style="padding:3px 4px;"><input type="number" id="cmMidAmt" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="number" id="cmMidRate" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="date" id="cmMidDate" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg);"></td></tr>
+        <tr><td style="padding:3px 6px; font-weight:700; color:var(--t2);">잔금</td>
+          <td style="padding:3px 4px;"><input type="number" id="cmBalAmt" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="number" id="cmBalRate" placeholder="0" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg); text-align:right;"></td>
+          <td style="padding:3px 4px;"><input type="date" id="cmBalDate" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; font-family:inherit; background:var(--bg);"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="pm-section">🏢 거래처(업체) 정보</div>
+    <div class="pm-grid c2" style="margin-bottom:14px;">
+      <div class="pm-field"><label>업체명 (거래처)</label><input type="text" id="cmVendor" list="vendorList" placeholder="예: 대성산업" onchange="onCmVendorChange()" onblur="onCmVendorChange()"><datalist id="vendorList"></datalist></div>
+      <div class="pm-field"><label>사업자등록번호</label><input type="text" id="cmBizNo" placeholder="예: 123-45-67890"></div>
+    </div>
+    <div class="pm-field"><label>담당자 이메일</label><input type="email" id="cmVendorEmail" placeholder="예: sales@company.com"></div>
+
+    <div class="pm-section">👤 프로젝트 담당자</div>
+    <div class="pm-grid c3" style="margin-bottom:14px;">
+      <div class="pm-field"><label>담당자 이름</label><input type="text" id="cmManager" placeholder="예: 홍길동"></div>
+      <div class="pm-field"><label>부서</label><input type="text" id="cmDept" placeholder="예: 사업본부"></div>
+      <div class="pm-field"><label>코스트센터</label><input type="text" id="cmCostCenter" placeholder="예: 사업본부"></div>
+    </div>
+
+    <div class="pm-section">📂 관련 문서 (경로 또는 링크)</div>
+    <div class="pm-field"><label>문서 기본 폴더 <span style="color:var(--t3); font-weight:500;">('찾기'로 고른 파일명 앞에 자동으로 붙습니다)</span></label>
+      <input type="text" id="cmDocBase" placeholder="예: D:\구매문서\" oninput="try{localStorage.setItem('purchase_doc_base', this.value.trim())}catch(e){}"></div>
+    <div class="pm-field"><label>계약서</label>
+      <div class="doc-input"><input type="text" id="cmDocContract" placeholder="예: D:\구매문서\계약서.pdf"><button type="button" class="browse-btn" onclick="browseDoc('cmDocContract')">📁 찾기</button></div></div>
+    <div class="pm-grid c2" style="margin-bottom:14px;">
+      <div class="pm-field"><label>선급보증증권</label>
+        <div class="doc-input"><input type="text" id="cmDocAdvance" placeholder="파일 또는 폴더 경로"><button type="button" class="browse-btn" onclick="browseDoc('cmDocAdvance')">📁 찾기</button></div></div>
+      <div class="pm-field"><label>계약이행보증증권</label>
+        <div class="doc-input"><input type="text" id="cmDocPerform" placeholder="파일 또는 폴더 경로"><button type="button" class="browse-btn" onclick="browseDoc('cmDocPerform')">📁 찾기</button></div></div>
+    </div>
+    <div class="pm-grid c2" style="margin-bottom:14px;">
+      <div class="pm-field"><label>하자보증증권</label>
+        <div class="doc-input"><input type="text" id="cmDocDefect" placeholder="파일 또는 폴더 경로"><button type="button" class="browse-btn" onclick="browseDoc('cmDocDefect')">📁 찾기</button></div></div>
+      <div class="pm-field"><label>기타 문서</label>
+        <div class="doc-input"><input type="text" id="cmDocEtc" placeholder="품의서 등 기타"><button type="button" class="browse-btn" onclick="browseDoc('cmDocEtc')">📁 찾기</button></div></div>
+    </div>
+    <input type="file" id="docFilePicker" style="display:none" onchange="onDocFilePicked(this)">
+    <div style="font-size:11.5px; color:var(--t3); margin:-4px 0 4px; line-height:1.5;">'📁 찾기'로 파일을 고르면 <b>기본 폴더 + 파일명</b>이 자동으로 채워집니다. (브라우저 보안상 전체 경로는 받아올 수 없어, 기본 폴더를 기준으로 조합합니다. 폴더가 다르면 칸에서 직접 수정하세요.) 그룹웨어 웹주소(http…)를 직접 붙여넣으면 카드에서 클릭 시 바로 열립니다.</div>
+
+    <div class="pm-field" style="margin-top:8px;"><label>비고</label><input type="text" id="cmNote" placeholder="추가 메모"></div>
+
+    <div class="modal-actions">
+      <button class="btn line" onclick="closeCaseModal()">취소</button>
+      <button class="btn" onclick="saveCaseModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============== 정의 ============== */
+const PTYPES = {
+  purchase: { name:'구매계약',     icon:'📦', color:'var(--blue)',   bg:'var(--blue-bg)' },
+  service:  { name:'외주용역계약', icon:'🔧', color:'var(--purple)', bg:'var(--purple-bg)' },
+};
+const STAGES = [
+  { key:'approval',    label:'품의진행 완료' },
+  { key:'contract',    label:'계약 완료' },
+  { key:'advanceBond', label:'선급보증증권' },
+  { key:'performBond', label:'계약이행보증증권' },
+  { key:'defectBond',  label:'하자보증증권이행' },
+  { key:'payment',     label:'지급 완료' },
+];
+const STATE_LABEL = { todo:'대기', done:'완료', na:'해당없음' };
+const STATUS_LABEL = { wait:'대기', doing:'진행중', done:'완료' };
+const DOC_TYPES = [
+  { key:'contract',    label:'계약서',          icon:'📄' },
+  { key:'advanceBond', label:'선급보증증권',     icon:'🔖' },
+  { key:'performBond', label:'계약이행보증증권', icon:'🔖' },
+  { key:'defectBond',  label:'하자보증증권',     icon:'🔖' },
+  { key:'etc',         label:'기타 문서',        icon:'📎' },
+];
+const PAY_TERMS = {
+  '30d': '30일 이내 계약금액의 100% 현금지급',
+  '60d': '60일 이내 계약금액의 100% 현금지급',
+  'etc': '기타',
+};
+function payTermText(c){
+  if(!c.payTermType) return '';
+  return c.payTermType==='etc' ? (c.payTermEtc||'기타') : PAY_TERMS[c.payTermType];
+}
+
+const SEED = [
+  { type:'purchase', name:'생산라인 A 자재 구매', vendor:'대성산업',     bizNo:'214-81-12345', vendorEmail:'sales@daesung.co.kr', payTermType:'30d', payTermEtc:'', dept:'사업본부',     manager:'김철수', costCenter:'사업본부',     supply:45000000, vat:4500000, contractDate:'2026-06-03', dueDate:'2026-07-15', note:'선급금 30% 조건', stages:{approval:'done',contract:'done',advanceBond:'done',performBond:'done',defectBond:'todo',payment:'todo'} },
+  { type:'purchase', name:'사무용 PC 20대 구매',  vendor:'테크메이트',   bizNo:'110-86-54321', vendorEmail:'b2b@techmate.com',     payTermType:'30d', payTermEtc:'', dept:'IT팀',         manager:'박민수', costCenter:'IT팀',         supply:24000000, vat:2400000, contractDate:'2026-06-18', dueDate:'2026-06-30', note:'', docs:{contract:'D:\\구매문서\\사무용PC20대\\계약서.pdf', advanceBond:'', performBond:'D:\\구매문서\\사무용PC20대', defectBond:'', etc:''}, stages:{approval:'done',contract:'todo',advanceBond:'na',performBond:'todo',defectBond:'todo',payment:'todo'} },
+  { type:'service',  name:'사옥 정기 청소용역',   vendor:'클린파트너스', bizNo:'135-81-67890', vendorEmail:'contact@cleanp.kr',    payTermType:'60d', payTermEtc:'', dept:'경영지원팀',   manager:'이영희', costCenter:'경영지원팀',   supply:12000000, vat:1200000, contractDate:'2026-06-10', dueDate:'2026-12-31', note:'월 100만원 · 연간', stages:{approval:'done',contract:'done',advanceBond:'na',performBond:'done',defectBond:'na',payment:'todo'} },
+  { type:'service',  name:'품질시스템 컨설팅',    vendor:'QSC컨설팅',    bizNo:'220-88-11223', vendorEmail:'pm@qsc.co.kr',         payTermType:'etc', payTermEtc:'착수금 50% 선지급, 잔금은 검수 후 30일 이내 지급', dept:'품질안전본부', manager:'정수진', costCenter:'품질안전본부', supply:30000000, vat:3000000, contractDate:'2026-05-20', dueDate:'2026-08-20', note:'완료 건', stages:{approval:'done',contract:'done',advanceBond:'done',performBond:'done',defectBond:'na',payment:'done'} },
+  { type:'purchase', name:'안전장비 일괄 구매',   vendor:'세이프코리아', bizNo:'312-86-99887', vendorEmail:'order@safekorea.com',  payTermType:'30d', payTermEtc:'', dept:'품질안전본부', manager:'김철수', costCenter:'품질안전본부', supply:8500000,  vat:850000,  contractDate:'2026-05-12', dueDate:'2026-06-05', note:'', stages:{approval:'done',contract:'done',advanceBond:'na',performBond:'na',defectBond:'done',payment:'done'} },
+];
+
+/* ============== Supabase 클라우드 동기화 ============== */
+const SB_URL = 'https://vvyqldyljajlmtydtqdf.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2eXFsZHlsamFqbG10eWR0cWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Nzc4NTQsImV4cCI6MjA5NzI1Mzg1NH0.YakWHeL5ZZK7RZ9K6fwxNECy02uwikoHYdRT-rSpLKc';
+const SB_REST = SB_URL + '/rest/v1/app_store';
+const SB_HEADERS = { apikey:SB_KEY, Authorization:'Bearer '+SB_KEY, 'Content-Type':'application/json' };
+
+function setSyncStatus(state){
+  const b = document.getElementById('syncBadge'); if(!b) return;
+  const map = { online:['online','☁ 연결됨'], saving:['saving','💾 저장 중…'], loading:['loading','☁ 연결 중…'], offline:['offline','⚠ 오프라인(로컬)'] };
+  const [cls,txt] = map[state] || map.loading;
+  b.className = 'sync-badge ' + cls; b.textContent = txt;
+}
+async function sbGet(key){
+  try{
+    const r = await fetch(`${SB_REST}?key=eq.${encodeURIComponent(key)}&select=value`, { headers:SB_HEADERS });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    return rows.length ? rows[0].value : null;
+  }catch(e){ return undefined; }
+}
+async function sbSet(key, value){
+  try{
+    const r = await fetch(`${SB_REST}?on_conflict=key`, {
+      method:'POST', headers:{ ...SB_HEADERS, Prefer:'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value, updated_at:new Date().toISOString() }),
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return true;
+  }catch(e){ return false; }
+}
+let _pushTimer = null;
+function sbPush(value){
+  setSyncStatus('saving');
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(async ()=>{
+    const ok = await sbSet(STORE, value);
+    setSyncStatus(ok ? 'online' : 'offline');
+  }, 600);
+}
+
+const STORE = 'purchase_cases_v1';
+function loadCases(){
+  try{ const r=localStorage.getItem(STORE); if(r){ const p=JSON.parse(r); if(Array.isArray(p)) return p; } }catch(e){}
+  return SEED.map((c,i)=>({ ...c, id:'c'+i, stages:{...c.stages} }));
+}
+function saveCases(){ try{ localStorage.setItem(STORE, JSON.stringify(CASES)); }catch(e){} sbPush(CASES); }
+
+let CASES = loadCases();
+let activeType = 'all';
+let selMonth = currentYM();
+let allPeriod = false;
+let editingCaseId = null;
+let fSearch='', fCostType='all', fStatus='all', fDept='all', fFlag='all';
+
+const won = n => '₩' + (n||0).toLocaleString('ko-KR');
+const numFmt = n => (n||0).toLocaleString('ko-KR');
+function currentYM(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
+/* ============== 진행률/상태 ============== */
+function progressOf(c){
+  const applicable = STAGES.filter(s => (c.stages[s.key]||'todo') !== 'na');
+  const done = applicable.filter(s => c.stages[s.key]==='done');
+  const pct = applicable.length ? Math.round(done.length/applicable.length*100) : 0;
+  return { pct, done:done.length, total:applicable.length };
+}
+function statusOf(c){
+  const p = progressOf(c);
+  if(p.total>0 && p.done===p.total) return 'done';
+  if(p.done>0) return 'doing';
+  return 'wait';
+}
+
+/* ============== 필터 ============== */
+function filtersActive(){ return !!(fSearch || fCostType!=='all' || fStatus!=='all' || fDept!=='all' || fFlag!=='all'); }
+function applyFilters(){
+  fSearch = (document.getElementById('fSearch').value||'').trim().toLowerCase();
+  fCostType = document.getElementById('fCostType').value;
+  fStatus = document.getElementById('fStatus').value;
+  fDept = document.getElementById('fDept').value;
+  fFlag = document.getElementById('fFlag').value;
+  renderCases(); renderStats();
+}
+function clearFilters(){
+  document.getElementById('fSearch').value='';
+  document.getElementById('fCostType').value='all';
+  document.getElementById('fStatus').value='all';
+  document.getElementById('fDept').value='all';
+  document.getElementById('fFlag').value='all';
+  applyFilters();
+}
+function populateFilterOptions(){
+  const costs=[...new Set(CASES.map(c=>c.costType).filter(Boolean))].sort();
+  const depts=[...new Set(CASES.map(c=>c.dept).filter(Boolean))].sort();
+  const ct=document.getElementById('fCostType'); if(ct){ const cur=ct.value;
+    ct.innerHTML='<option value="all">비용구분 전체</option>'+costs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    ct.value=costs.includes(cur)?cur:'all'; }
+  const dp=document.getElementById('fDept'); if(dp){ const cur=dp.value;
+    dp.innerHTML='<option value="all">부서 전체</option>'+depts.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    dp.value=depts.includes(cur)?cur:'all'; }
+}
+function visibleCases(){
+  let list = CASES.slice();
+  if(activeType!=='all') list = list.filter(c=>c.type===activeType);
+  const active = filtersActive();
+  if(!allPeriod && !active) list = list.filter(c=> (c.contractDate||'').slice(0,7)===selMonth);
+  if(fSearch){
+    list = list.filter(c=>{
+      const hay = `${c.name||''} ${c.vendor||''} ${c.manager||''} ${c.project||''} ${c.bizNo||''} ${c.dept||''} ${c.costType||''}`.toLowerCase();
+      return hay.includes(fSearch);
+    });
+  }
+  if(fCostType!=='all') list = list.filter(c=> (c.costType||'')===fCostType);
+  if(fStatus!=='all') list = list.filter(c=> statusOf(c)===fStatus);
+  if(fDept!=='all') list = list.filter(c=> (c.dept||'')===fDept);
+  if(fFlag==='bondMissing') list = list.filter(c=> ['advanceBond','performBond','defectBond'].some(k=> (c.stages[k]||'todo')==='todo'));
+  else if(fFlag==='unpaid') list = list.filter(c=> (c.stages.payment||'todo')!=='done');
+  list.sort((a,b)=> (b.contractDate||'').localeCompare(a.contractDate||''));
+  return list;
+}
+
+/* ============== 렌더 ============== */
+function renderStats(){
+  const list = visibleCases();
+  let doing=0, done=0, amount=0;
+  list.forEach(c=>{
+    const s = statusOf(c);
+    if(s==='done') done++; else if(s==='doing') doing++;
+    amount += (c.supply||0)+(c.vat||0);
+  });
+  document.getElementById('statTotal').innerHTML = list.length + '<small>건</small>';
+  document.getElementById('statDoing').innerHTML = doing + '<small>건</small>';
+  document.getElementById('statDone').innerHTML = done + '<small>건</small>';
+  document.getElementById('statAmount').textContent = won(amount);
+}
+function renderTabs(){
+  const wrap = document.getElementById('typeTabs');
+  const tabs = [['all','전체']].concat(Object.entries(PTYPES).map(([k,t])=>[k, t.icon+' '+t.name]));
+  wrap.innerHTML = '';
+  tabs.forEach(([key,label])=>{
+    const b=document.createElement('button');
+    b.className='tab'+(activeType===key?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{ activeType=key; renderTabs(); renderCases(); renderStats(); };
+    wrap.appendChild(b);
+  });
+}
+function renderCases(){
+  const grid = document.getElementById('caseGrid');
+  const list = visibleCases();
+  const cnt = document.getElementById('fCount');
+  if(cnt) cnt.textContent = filtersActive() ? `검색 결과 ${list.length}건` : '';
+  if(!list.length){
+    grid.innerHTML = `<div class="empty">${filtersActive()?'조건에 맞는 구매 건이 없습니다.<br>필터를 바꾸거나 \'필터 초기화\'를 눌러보세요.':(allPeriod?'등록된':'해당 월에')+' 구매 건이 없습니다.<br>상단의 \'+ 구매 건 추가\' 버튼으로 등록해 보세요.'}</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(c=>{
+    const t = PTYPES[c.type];
+    const p = progressOf(c);
+    const st = statusOf(c);
+    const amount = (c.supply||0)+(c.vat||0);
+    const period = `${c.contractDate||'-'}${c.dueDate? ' ~ '+c.dueDate : ''}`;
+    const chips = STAGES.map(s=>{
+      const state = c.stages[s.key]||'todo';
+      const mark = state==='done' ? '✓ ' : state==='na' ? '— ' : '';
+      return `<button class="stage-chip ${state}" onclick="cycleStage('${c.id}','${s.key}')" title="클릭: 대기→완료→해당없음">${mark}${s.label}</button>`;
+    }).join('');
+    return `
+    <div class="case-card">
+      <div class="case-head">
+        <div class="case-icon" style="background:${t.bg}; color:${t.color};">${t.icon}</div>
+        <div class="grow">
+          <div class="case-title-row">
+            <span class="case-title">${esc(c.name)}</span>
+            <span class="type-badge" style="background:${t.bg}; color:${t.color};">${t.name}</span>
+            ${c.costType?`<span class="type-badge" style="background:var(--orange-bg); color:var(--orange);">${esc(c.costType)}</span>`:''}
+            <span class="status-badge st-${st}">${STATUS_LABEL[st]}</span>
+          </div>
+          ${c.project?`<div class="case-meta"><span class="k">📁 과제</span> ${esc(c.project)}</div>`:''}
+          <div class="case-meta"><span class="k">🏢</span> <b>${esc(c.vendor||'-')}</b>${c.bizNo?` <span class="k">(${esc(c.bizNo)})</span>`:''}${c.vendorEmail?` &nbsp;·&nbsp; <span class="k">✉</span> ${esc(c.vendorEmail)}`:''}</div>
+          <div class="case-meta"><span class="k">👤</span> ${esc(c.manager||'-')} &nbsp;·&nbsp; <span class="k">🗂</span> ${esc(c.dept||'-')}${c.costCenter?` &nbsp;·&nbsp; <span class="k">CC</span> ${esc(c.costCenter)}`:''}</div>
+          <div class="case-meta"><span class="k">📅</span> ${period} &nbsp;·&nbsp; <span class="k">💰</span> <b>${won(amount)}</b> <span class="k">(공급 ${numFmt(c.supply)} + 부가세 ${numFmt(c.vat)})</span></div>
+          ${payScheduleLine(c)}
+          ${payTermText(c)?`<div class="case-meta"><span class="k">💳</span> ${esc(payTermText(c))}</div>`:''}
+        </div>
+        <div class="case-acts">
+          <button class="icon-btn" onclick="openCaseModal('${c.id}')" title="수정">✏️</button>
+          <button class="icon-btn" onclick="deleteCase('${c.id}')" title="삭제">🗑</button>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-track"><div class="prog-fill ${p.pct===100?'full':''}" style="width:${p.pct}%"></div></div>
+        <div class="prog-label">${p.done}/${p.total} 단계 · ${p.pct}%</div>
+      </div>
+      <div class="stage-row">${chips}</div>
+      ${(c.docs && DOC_TYPES.some(d=>c.docs[d.key])) ? `<div class="doc-row"><span class="doc-label">📂 관련 문서</span>${
+        DOC_TYPES.filter(d=>c.docs[d.key]).map(d=>`<button class="doc-chip" onclick="openDoc('${c.id}','${d.key}')" title="${esc(c.docs[d.key])}">${d.icon} ${d.label}</button>`).join('')
+      }</div>` : ''}
+      ${c.note ? `<div class="case-note"><span class="k">📝 비고</span>${esc(c.note)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function payScheduleLine(c){
+  const p = c.pay; if(!p) return '';
+  const parts = [];
+  if(p.prepayAmt) parts.push(`선급 ${numFmt(p.prepayAmt)}${p.prepayRate?`(${p.prepayRate}%)`:''}${p.prepayDate?` ~${p.prepayDate.slice(5)}`:''}`);
+  if(p.midAmt) parts.push(`중도 ${numFmt(p.midAmt)}${p.midRate?`(${p.midRate}%)`:''}${p.midDate?` ~${p.midDate.slice(5)}`:''}`);
+  if(p.balAmt) parts.push(`잔금 ${numFmt(p.balAmt)}${p.balRate?`(${p.balRate}%)`:''}${p.balDate?` ~${p.balDate.slice(5)}`:''}`);
+  if(!parts.length) return '';
+  return `<div class="case-meta"><span class="k">🧾 지급</span> ${parts.join(' · ')}</div>`;
+}
+
+/* 관련 문서 열기: 웹주소(http)면 새 탭, 그 외(D:\ 경로 등)는 클립보드 복사 후 안내 */
+function openDoc(id, key){
+  const c = CASES.find(x=>x.id===id); if(!c || !c.docs) return;
+  const v = (c.docs[key]||'').trim(); if(!v) return;
+  if(/^https?:\/\//i.test(v)){
+    window.open(v, '_blank');
+    return;
+  }
+  const done = ()=> alert('문서 경로가 복사되었습니다.\n\n' + v + '\n\n파일 탐색기를 열고 주소창에 붙여넣기(Ctrl+V) 후 Enter 하면 열립니다.');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(v).then(done).catch(()=>{ prompt('아래 경로를 복사해 탐색기 주소창에 붙여넣으세요:', v); });
+  } else {
+    prompt('아래 경로를 복사해 탐색기 주소창에 붙여넣으세요:', v);
+  }
+}
+
+/* 찾아보기: 파일 선택 시 '기본 폴더 + 파일명'을 칸에 채움 (브라우저는 파일명만 제공) */
+let _docTargetField = null;
+function getDocBase(){
+  let b = (document.getElementById('cmDocBase').value || '').trim();
+  if(b && !/[\\\/]$/.test(b)) b += '\\';
+  return b;
+}
+function browseDoc(fieldId){
+  _docTargetField = fieldId;
+  try{ localStorage.setItem('purchase_doc_base', (document.getElementById('cmDocBase').value||'').trim()); }catch(e){}
+  const picker = document.getElementById('docFilePicker');
+  picker.value = '';
+  picker.click();
+}
+function onDocFilePicked(input){
+  const f = input.files && input.files[0];
+  if(!f || !_docTargetField) return;
+  const base = getDocBase();
+  document.getElementById(_docTargetField).value = base + f.name;
+  _docTargetField = null;
+}
+
+/* ============== 단계 토글 ============== */
+function cycleStage(id, key){
+  const c = CASES.find(x=>x.id===id); if(!c) return;
+  const cur = c.stages[key]||'todo';
+  c.stages[key] = cur==='todo' ? 'done' : cur==='done' ? 'na' : 'todo';
+  saveCases();
+  renderCases(); renderStats();
+}
+
+/* ============== 월/구분 컨트롤 ============== */
+function syncMonthUI(){
+  const pick = document.getElementById('monthPick');
+  pick.value = selMonth;
+  pick.disabled = allPeriod;
+  document.getElementById('allBtn').classList.toggle('on', allPeriod);
+}
+function shiftMonth(delta){
+  allPeriod = false;
+  const [y,m] = selMonth.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  selMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  syncMonthUI(); renderAll();
+}
+function onMonthPick(){
+  selMonth = document.getElementById('monthPick').value || currentYM();
+  allPeriod = false; syncMonthUI(); renderAll();
+}
+function toggleAll(){ allPeriod = !allPeriod; syncMonthUI(); renderAll(); }
+
+/* ============== 추가/수정 모달 ============== */
+function togglePayTermEtc(){
+  const isEtc = document.getElementById('cmPayTerm').value === 'etc';
+  document.getElementById('cmPayTermEtc').style.display = isEtc ? '' : 'none';
+}
+function openCaseModal(id){
+  editingCaseId = id || null;
+  const c = id ? CASES.find(x=>x.id===id) : null;
+  document.getElementById('cmTitle').textContent = c ? '구매 건 수정' : '구매 건 추가';
+  document.getElementById('cmType').value = c ? c.type : (activeType!=='all' ? activeType : 'purchase');
+  document.getElementById('cmName').value = c ? c.name : '';
+  document.getElementById('cmVendor').value = c ? c.vendor : '';
+  document.getElementById('cmBizNo').value = c ? (c.bizNo||'') : '';
+  document.getElementById('cmVendorEmail').value = c ? (c.vendorEmail||'') : '';
+  document.getElementById('cmPayTerm').value = c ? (c.payTermType||'30d') : '30d';
+  document.getElementById('cmPayTermEtc').value = c ? (c.payTermEtc||'') : '';
+  togglePayTermEtc();
+  document.getElementById('cmManager').value = c ? c.manager : '';
+  document.getElementById('cmDept').value = c ? c.dept : '';
+  document.getElementById('cmCostCenter').value = c ? (c.costCenter||'') : '';
+  document.getElementById('cmContractDate').value = c ? c.contractDate : (allPeriod ? '' : selMonth+'-01');
+  document.getElementById('cmDueDate').value = c ? c.dueDate : '';
+  document.getElementById('cmSupply').value = c ? c.supply : '';
+  document.getElementById('cmVat').value = c ? c.vat : '';
+  document.getElementById('cmCostType').value = c ? (c.costType||'') : '';
+  document.getElementById('cmProject').value = c ? (c.project||'') : '';
+  const pay = (c && c.pay) ? c.pay : {};
+  document.getElementById('cmPrepayAmt').value = pay.prepayAmt || '';
+  document.getElementById('cmPrepayRate').value = pay.prepayRate || '';
+  document.getElementById('cmPrepayDate').value = pay.prepayDate || '';
+  document.getElementById('cmMidAmt').value = pay.midAmt || '';
+  document.getElementById('cmMidRate').value = pay.midRate || '';
+  document.getElementById('cmMidDate').value = pay.midDate || '';
+  document.getElementById('cmBalAmt').value = pay.balAmt || '';
+  document.getElementById('cmBalRate').value = pay.balRate || '';
+  document.getElementById('cmBalDate').value = pay.balDate || '';
+  document.getElementById('cmNote').value = c ? c.note : '';
+  const docs = (c && c.docs) ? c.docs : {};
+  document.getElementById('cmDocContract').value = docs.contract || '';
+  document.getElementById('cmDocAdvance').value = docs.advanceBond || '';
+  document.getElementById('cmDocPerform').value = docs.performBond || '';
+  document.getElementById('cmDocDefect').value = docs.defectBond || '';
+  document.getElementById('cmDocEtc').value = docs.etc || '';
+  try{ document.getElementById('cmDocBase').value = localStorage.getItem('purchase_doc_base') || 'D:\\구매문서\\'; }catch(e){ document.getElementById('cmDocBase').value = 'D:\\구매문서\\'; }
+  document.getElementById('caseModal').classList.add('show');
+  setTimeout(()=> document.getElementById('cmName').focus(), 50);
+}
+function closeCaseModal(){ document.getElementById('caseModal').classList.remove('show'); editingCaseId=null; }
+function saveCaseModal(){
+  const name = document.getElementById('cmName').value.trim();
+  if(!name){ alert('건명을 입력하세요.'); return; }
+  const data = {
+    type: document.getElementById('cmType').value,
+    name,
+    vendor: document.getElementById('cmVendor').value.trim(),
+    bizNo: document.getElementById('cmBizNo').value.trim(),
+    vendorEmail: document.getElementById('cmVendorEmail').value.trim(),
+    payTermType: document.getElementById('cmPayTerm').value,
+    payTermEtc: document.getElementById('cmPayTermEtc').value.trim(),
+    manager: document.getElementById('cmManager').value.trim(),
+    dept: document.getElementById('cmDept').value.trim(),
+    costCenter: document.getElementById('cmCostCenter').value.trim(),
+    contractDate: document.getElementById('cmContractDate').value,
+    dueDate: document.getElementById('cmDueDate').value,
+    supply: parseInt(document.getElementById('cmSupply').value,10)||0,
+    vat: parseInt(document.getElementById('cmVat').value,10)||0,
+    costType: document.getElementById('cmCostType').value.trim(),
+    project: document.getElementById('cmProject').value.trim(),
+    pay: {
+      prepayAmt: parseInt(document.getElementById('cmPrepayAmt').value,10)||0,
+      prepayRate: parseFloat(document.getElementById('cmPrepayRate').value)||0,
+      prepayDate: document.getElementById('cmPrepayDate').value,
+      midAmt: parseInt(document.getElementById('cmMidAmt').value,10)||0,
+      midRate: parseFloat(document.getElementById('cmMidRate').value)||0,
+      midDate: document.getElementById('cmMidDate').value,
+      balAmt: parseInt(document.getElementById('cmBalAmt').value,10)||0,
+      balRate: parseFloat(document.getElementById('cmBalRate').value)||0,
+      balDate: document.getElementById('cmBalDate').value,
+    },
+    note: document.getElementById('cmNote').value.trim(),
+    docs: {
+      contract: document.getElementById('cmDocContract').value.trim(),
+      advanceBond: document.getElementById('cmDocAdvance').value.trim(),
+      performBond: document.getElementById('cmDocPerform').value.trim(),
+      defectBond: document.getElementById('cmDocDefect').value.trim(),
+      etc: document.getElementById('cmDocEtc').value.trim(),
+    },
+  };
+  if(editingCaseId){
+    const c = CASES.find(x=>x.id===editingCaseId);
+    Object.assign(c, data);
+  } else {
+    CASES.push({ id:'c'+Date.now(), ...data, stages:{approval:'todo',contract:'todo',advanceBond:'todo',performBond:'todo',defectBond:'todo',payment:'todo'} });
+    if(!allPeriod && data.contractDate) selMonth = data.contractDate.slice(0,7);
+    syncMonthUI();
+  }
+  saveCases(); closeCaseModal(); renderAll();
+}
+function deleteCase(id){
+  const c = CASES.find(x=>x.id===id);
+  if(!confirm(`'${c?c.name:''}' 구매 건을 삭제할까요?`)) return;
+  CASES = CASES.filter(x=>x.id!==id);
+  saveCases(); renderAll();
+}
+function resetData(){
+  if(!confirm('모든 구매 건을 초기 상태로 되돌릴까요?\n(클라우드 데이터도 초기화됩니다.)')) return;
+  localStorage.removeItem(STORE);
+  CASES = loadCases();
+  saveCases();
+  renderAll();
+}
+function backupJSON(){
+  const data = { _type:'soosan-purchase-backup', _at:new Date().toISOString(), cases:CASES };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `구매업무_백업_${currentYM().replace('-','')}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function restoreJSON(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const d = JSON.parse(reader.result);
+      if(!Array.isArray(d.cases)) throw new Error('형식 오류');
+      if(!confirm('백업 파일의 내용으로 덮어쓸까요?\n현재 데이터(클라우드 포함)가 교체됩니다.')) return;
+      CASES = d.cases; saveCases(); renderAll();
+      alert('복원이 완료되었습니다.');
+    }catch(e){ alert('복원 실패: 올바른 백업 파일이 아닙니다.'); }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ============== 거래처(업체) 디렉터리 (사업자번호 자동완성) ============== */
+let VENDOR_DIR = {};
+try{ VENDOR_DIR = JSON.parse(localStorage.getItem('purchase_vendor_dir')||'{}') || {}; }catch(e){ VENDOR_DIR={}; }
+function updateVendorDir(cases){
+  cases.forEach(c=>{ if(c.vendor && c.bizNo) VENDOR_DIR[c.vendor]=c.bizNo; });
+  try{ localStorage.setItem('purchase_vendor_dir', JSON.stringify(VENDOR_DIR)); }catch(e){}
+  fillVendorDatalist();
+}
+function fillVendorDatalist(){
+  const dl=document.getElementById('vendorList'); if(!dl) return;
+  dl.innerHTML=Object.keys(VENDOR_DIR).sort().map(v=>`<option value="${esc(v)}">`).join('');
+}
+function onCmVendorChange(){
+  const v=document.getElementById('cmVendor').value.trim();
+  const biz=document.getElementById('cmBizNo');
+  if(v && VENDOR_DIR[v] && !biz.value.trim()) biz.value=VENDOR_DIR[v];
+}
+
+/* ============== 엑셀 가져오기 (기존 계약현황 양식) ============== */
+function _num(v){ const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:Math.round(n); }
+function _rate(v){ let n=parseFloat(v); if(isNaN(n)) return 0; if(n>0 && n<=1) n=n*100; return Math.round(n*10)/10; }
+function _hasO(v){ const s=String(v==null?'':v).trim().toUpperCase(); return s==='O'||s==='Y'||s==='ㅇ'||s==='완료'||s==='유'; }
+function _xdate(v){
+  if(v==null||v==='') return '';
+  if(v instanceof Date && !isNaN(v)) return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+  if(typeof v==='number' && XLSX.SSF){ const dc=XLSX.SSF.parse_date_code(v); if(dc&&dc.y) return `${dc.y}-${String(dc.m).padStart(2,'0')}-${String(dc.d).padStart(2,'0')}`; }
+  const m=String(v).match(/(\d{4})[-./년\s]+(\d{1,2})[-./월\s]+(\d{1,2})/);
+  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  return '';
+}
+function rowToCase(r){
+  const typeRaw=String(r[3]||'').trim();
+  const type = typeRaw.includes('용역') ? 'service' : 'purchase';
+  const supply=_num(r[11]);
+  const prepayAmt=_num(r[12]);
+  const adv=_hasO(r[21]), perf=_hasO(r[22]), def=_hasO(r[23]);
+  const progress=String(r[24]||'').trim();
+  const paid=/지급\s*완료/.test(progress);
+  return {
+    id:'c'+Date.now()+Math.random().toString(36).slice(2,7),
+    type,
+    costType:String(r[4]||'').trim(),
+    project:String(r[5]||'').trim(),
+    name:String(r[6]||'').trim(),
+    vendor:String(r[7]||'').trim(),
+    bizNo:String(r[8]||'').trim(),
+    vendorEmail:'',
+    contractDate:_xdate(r[9]),
+    dueDate:_xdate(r[10]),
+    supply, vat:Math.round(supply*0.1),
+    manager:String(r[2]||'').trim(),
+    dept:String(r[1]||'').trim(),
+    costCenter:'',
+    payTermType:'etc', payTermEtc:String(r[25]||'').trim().replace(/\s*\n\s*/g,' / '),
+    pay:{
+      prepayAmt, prepayRate:_rate(r[13]), prepayDate:_xdate(r[14]),
+      midAmt:_num(r[15]), midRate:_rate(r[16]), midDate:_xdate(r[17]),
+      balAmt:_num(r[18]), balRate:_rate(r[19]), balDate:_xdate(r[20]),
+    },
+    note: progress ? ('계약진행: '+progress) : '',
+    docs:{contract:'',advanceBond:'',performBond:'',defectBond:'',etc:''},
+    stages:{
+      approval:'done', contract:'done',
+      advanceBond: adv?'done':(prepayAmt>0?'todo':'na'),
+      performBond: perf?'done':'todo',
+      defectBond:  def?'done':'todo',
+      payment: paid?'done':'todo',
+    },
+  };
+}
+function importExcel(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+      const yearSheets=wb.SheetNames.filter(n=>/\d{4}/.test(n));
+      if(!yearSheets.length){ alert('연도 시트(예: "2026년")를 찾을 수 없습니다.'); input.value=''; return; }
+      const parsed=[];
+      yearSheets.forEach(sn=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1, defval:'', blankrows:false});
+        for(let i=3;i<rows.length;i++){
+          const r=rows[i]; if(!r) continue;
+          const nm=String(r[6]==null?'':r[6]).trim();
+          if(!nm || nm==='계약명') continue;
+          parsed.push(rowToCase(r));
+        }
+      });
+      if(!parsed.length){ alert('가져올 데이터가 없습니다. (계약명이 있는 행이 없습니다)'); input.value=''; return; }
+      const replace=confirm(`연도 시트 ${yearSheets.join(', ')}에서 총 ${parsed.length}건을 찾았습니다.\n\n[확인] 기존 데이터를 모두 지우고 교체\n[취소] 기존 목록에 추가`);
+      CASES = replace ? parsed : CASES.concat(parsed);
+      updateVendorDir(parsed);
+      saveCases();
+      allPeriod=true; if(typeof syncMonthUI==='function') syncMonthUI();
+      renderAll();
+      alert(`${parsed.length}건을 가져왔습니다. '전체 기간' 보기로 표시됩니다.`);
+    }catch(err){ console.error(err); alert('가져오기 실패: 파일 형식을 확인해 주세요.\n'+(err&&err.message||err)); }
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+async function sbInit(){
+  setSyncStatus('loading');
+  const cloud = await sbGet(STORE);
+  if(cloud===undefined){ setSyncStatus('offline'); return; }
+  if(Array.isArray(cloud)){
+    CASES = cloud; try{ localStorage.setItem(STORE, JSON.stringify(CASES)); }catch(e){}
+    setSyncStatus('online'); updateVendorDir(CASES); renderAll();
+  } else if(cloud===null){
+    await sbSet(STORE, CASES); setSyncStatus('online');
+  }
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCaseModal(); });
+
+/* ============== 엑셀 (토스 스타일) ============== */
+const XF='맑은 고딕';
+const XBORDER={top:{style:'thin',color:{rgb:'E5E8EB'}},bottom:{style:'thin',color:{rgb:'E5E8EB'}},left:{style:'thin',color:{rgb:'E5E8EB'}},right:{style:'thin',color:{rgb:'E5E8EB'}}};
+const ST={
+  title:{font:{name:XF,sz:16,bold:true,color:{rgb:'191F28'}},alignment:{horizontal:'left',vertical:'center'}},
+  sub:{font:{name:XF,sz:10,color:{rgb:'8B95A1'}},alignment:{horizontal:'left',vertical:'center'}},
+  header:{font:{name:XF,sz:10.5,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'3182F6'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:XBORDER},
+  cell:{font:{name:XF,sz:10,color:{rgb:'191F28'}},alignment:{horizontal:'center',vertical:'center'},border:XBORDER},
+  cellAlt:{font:{name:XF,sz:10,color:{rgb:'191F28'}},alignment:{horizontal:'center',vertical:'center'},fill:{fgColor:{rgb:'FAFBFC'}},border:XBORDER},
+};
+function leftify(s){return {...s,alignment:{horizontal:'left',vertical:'center'}};}
+function numify(s){return {...s,alignment:{horizontal:'right',vertical:'center'}};}
+function stageCellStyle(state, alt){
+  const base = alt?ST.cellAlt:ST.cell;
+  if(state==='done') return {...base, font:{name:XF,sz:10,bold:true,color:{rgb:'1DB67F'}}, fill:{fgColor:{rgb:'E6F9F0'}}};
+  if(state==='na')   return {...base, font:{name:XF,sz:10,color:{rgb:'C4CDD6'}}};
+  return {...base, font:{name:XF,sz:10,color:{rgb:'8B95A1'}}};
+}
+function statusCellStyle(st, alt){
+  const base=alt?ST.cellAlt:ST.cell;
+  if(st==='done') return {...base,font:{name:XF,sz:10,bold:true,color:{rgb:'1DB67F'}},fill:{fgColor:{rgb:'E6F9F0'}}};
+  if(st==='doing')return {...base,font:{name:XF,sz:10,bold:true,color:{rgb:'3182F6'}},fill:{fgColor:{rgb:'EBF2FF'}}};
+  return {...base,font:{name:XF,sz:10,color:{rgb:'8B95A1'}}};
+}
+function buildSheet(matrix){
+  const aoa = matrix.map(row=>row.map(c=>c.v));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  matrix.forEach((row,r)=>row.forEach((c,col)=>{
+    const ref=XLSX.utils.encode_cell({r,c:col});
+    if(!ws[ref]) ws[ref]={v:c.v};
+    if(c.s) ws[ref].s=c.s; if(c.z) ws[ref].z=c.z; if(c.t) ws[ref].t=c.t;
+  }));
+  return ws;
+}
+function exportCases(){
+  const list = visibleCases();
+  if(!list.length){ alert('내보낼 구매 건이 없습니다.'); return; }
+  const headers = ['종류','비용구분','프로젝트','건명','거래처','사업자등록번호','담당자이메일','담당자','부서','코스트센터','계약시작일','계약종료일','공급가액','부가세','계약금액(합계)','계약조건',
+    '선급금액','선급율','선급예정일','중도금액','중도율','중도예정일','잔금액','잔금율','잔금예정일',
+    '품의진행','계약완료','선급보증','계약이행보증','하자보증','지급완료','진행률','상태','비고'];
+  const NC = headers.length;
+  const periodLabel = allPeriod ? '전체 기간' : selMonth.replace('-','년 ')+'월';
+  const typeLabel = activeType==='all' ? '전체' : PTYPES[activeType].name;
+
+  const m=[];
+  m.push([{v:'구매업무 진행현황', s:ST.title}].concat(Array(NC-1).fill({v:'',s:ST.title})));
+  m.push([{v:`수산이앤에스 · ${periodLabel} · ${typeLabel} · 총 ${list.length}건`, s:ST.sub}].concat(Array(NC-1).fill({v:'',s:ST.sub})));
+  m.push(headers.map(h=>({v:h, s:ST.header})));
+
+  list.forEach((c,i)=>{
+    const alt = i%2===1; const base = alt?ST.cellAlt:ST.cell;
+    const p = progressOf(c); const st = statusOf(c);
+    const sc = k => STATE_LABEL[c.stages[k]||'todo'];
+    const pay = c.pay || {};
+    m.push([
+      {v:PTYPES[c.type].name, s:base},
+      {v:c.costType||'', s:base},
+      {v:c.project||'', s:leftify(base)},
+      {v:c.name, s:leftify(base)},
+      {v:c.vendor||'', s:leftify(base)},
+      {v:c.bizNo||'', s:base},
+      {v:c.vendorEmail||'', s:leftify(base)},
+      {v:c.manager||'', s:base},
+      {v:c.dept||'', s:base},
+      {v:c.costCenter||'', s:base},
+      {v:c.contractDate||'', s:base},
+      {v:c.dueDate||'', s:base},
+      {v:c.supply||0, t:'n', z:'₩#,##0', s:numify(base)},
+      {v:c.vat||0, t:'n', z:'₩#,##0', s:numify(base)},
+      {v:(c.supply||0)+(c.vat||0), t:'n', z:'₩#,##0', s:numify(base)},
+      {v:payTermText(c), s:leftify(base)},
+      {v:pay.prepayAmt||0, t:'n', z:'₩#,##0', s:numify(base)},
+      {v:pay.prepayRate?pay.prepayRate/100:0, t:'n', z:'0%', s:numify(base)},
+      {v:pay.prepayDate||'', s:base},
+      {v:pay.midAmt||0, t:'n', z:'₩#,##0', s:numify(base)},
+      {v:pay.midRate?pay.midRate/100:0, t:'n', z:'0%', s:numify(base)},
+      {v:pay.midDate||'', s:base},
+      {v:pay.balAmt||0, t:'n', z:'₩#,##0', s:numify(base)},
+      {v:pay.balRate?pay.balRate/100:0, t:'n', z:'0%', s:numify(base)},
+      {v:pay.balDate||'', s:base},
+      {v:sc('approval'), s:stageCellStyle(c.stages.approval, alt)},
+      {v:sc('contract'), s:stageCellStyle(c.stages.contract, alt)},
+      {v:sc('advanceBond'), s:stageCellStyle(c.stages.advanceBond, alt)},
+      {v:sc('performBond'), s:stageCellStyle(c.stages.performBond, alt)},
+      {v:sc('defectBond'), s:stageCellStyle(c.stages.defectBond, alt)},
+      {v:sc('payment'), s:stageCellStyle(c.stages.payment, alt)},
+      {v:p.pct/100, t:'n', z:'0%', s:numify(base)},
+      {v:STATUS_LABEL[st], s:statusCellStyle(st, alt)},
+      {v:c.note||'', s:leftify(base)},
+    ]);
+  });
+
+  const ws = buildSheet(m);
+  ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:NC-1}},{s:{r:1,c:0},e:{r:1,c:NC-1}}];
+  ws['!cols'] = [{wch:11},{wch:9},{wch:22},{wch:24},{wch:14},{wch:15},{wch:20},{wch:9},{wch:12},{wch:11},{wch:12},{wch:12},{wch:13},{wch:12},{wch:14},{wch:28},
+    {wch:13},{wch:7},{wch:12},{wch:13},{wch:7},{wch:12},{wch:13},{wch:7},{wch:12},
+    {wch:8},{wch:8},{wch:9},{wch:12},{wch:9},{wch:8},{wch:8},{wch:8},{wch:18}];
+  ws['!rows'] = [{hpt:26},{hpt:18},{hpt:30}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '구매진행현황');
+  const fn = allPeriod ? '전체기간' : selMonth.replace('-','');
+  XLSX.writeFile(wb, `구매업무_진행현황_${fn}.xlsx`);
+}
+
+/* ============== 초기화 ============== */
+function renderAll(){ populateFilterOptions(); renderStats(); renderTabs(); renderCases(); }
+(function init(){
+  // index.html에서 ?type=purchase / ?type=service 로 진입 시 해당 구분 탭 선택
+  try{
+    const t = new URLSearchParams(location.search).get('type');
+    if(t==='purchase' || t==='service') activeType = t;
+  }catch(e){}
+  syncMonthUI(); renderAll();
+  updateVendorDir(CASES);
+  sbInit();
+})();
+</script>
+</body>
+</html>

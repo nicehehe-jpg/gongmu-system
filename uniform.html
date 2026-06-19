@@ -55,6 +55,11 @@
   .btn.purple{background:var(--purple);} .btn.purple:hover{background:#5b4bd6;}
   .btn.red-line{background:var(--red-bg); color:var(--red);} .btn.red-line:hover{background:#fbd8db;}
   .btn.sm{padding:6px 12px; font-size:12px; border-radius:8px;}
+  .sync-badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; margin-left:6px; vertical-align:middle;}
+  .sync-badge.online{background:var(--green-bg); color:var(--green);}
+  .sync-badge.saving{background:var(--blue-bg); color:var(--blue);}
+  .sync-badge.loading{background:var(--bg); color:var(--t3);}
+  .sync-badge.offline{background:var(--orange-bg); color:var(--orange);}
 
   /* ===== 통계 카드 ===== */
   .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;}
@@ -222,12 +227,15 @@
 <div class="page-head">
   <div>
     <h1>🧥 피복 관리 시스템</h1>
-    <p class="page-sub">입고·출고·재고 현황을 품목별로 한눈에 관리합니다 · 수산이앤에스</p>
+    <p class="page-sub">입고·출고·재고 현황을 품목별로 한눈에 관리합니다 · 수산이앤에스 <span id="syncBadge" class="sync-badge loading">☁ 연결 중…</span></p>
   </div>
   <div class="head-btns">
     <button class="btn green sm" onclick="exportStock()">📊 재고현황 엑셀</button>
     <button class="btn purple sm" onclick="exportTxns()">🧾 입출고 내역 엑셀</button>
     <button class="btn sm" onclick="openVoucher()">📑 전표생성기</button>
+    <button class="btn line sm" onclick="backupJSON()">💾 백업</button>
+    <button class="btn line sm" onclick="document.getElementById('restoreFile').click()">📂 복원</button>
+    <input type="file" id="restoreFile" accept="application/json" style="display:none" onchange="restoreJSON(this)">
     <button class="btn line sm" onclick="resetData()">↺ 초기화</button>
   </div>
 </div>
@@ -457,6 +465,49 @@ const SEED_TXNS = [
   {date:'2026-06-10', key:'sweat_short',   size:'100', type:'out', qty:78, price:0,     maker:'',         party:'전 직원 지급',   note:'하절기 일괄지급'},
 ];
 
+/* ============== Supabase 클라우드 동기화 ============== */
+const SB_URL = 'https://vvyqldyljajlmtydtqdf.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2eXFsZHlsamFqbG10eWR0cWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Nzc4NTQsImV4cCI6MjA5NzI1Mzg1NH0.YakWHeL5ZZK7RZ9K6fwxNECy02uwikoHYdRT-rSpLKc';
+const SB_REST = SB_URL + '/rest/v1/app_store';
+const SB_HEADERS = { apikey:SB_KEY, Authorization:'Bearer '+SB_KEY, 'Content-Type':'application/json' };
+
+function setSyncStatus(state){
+  const b = document.getElementById('syncBadge'); if(!b) return;
+  const map = { online:['online','☁ 연결됨'], saving:['saving','💾 저장 중…'], loading:['loading','☁ 연결 중…'], offline:['offline','⚠ 오프라인(로컬)'] };
+  const [cls,txt] = map[state] || map.loading;
+  b.className = 'sync-badge ' + cls;
+  b.textContent = txt;
+}
+// 반환: 배열/객체=데이터, null=클라우드에 키 없음, undefined=접속 실패
+async function sbGet(key){
+  try{
+    const r = await fetch(`${SB_REST}?key=eq.${encodeURIComponent(key)}&select=value`, { headers:SB_HEADERS });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    return rows.length ? rows[0].value : null;
+  }catch(e){ return undefined; }
+}
+async function sbSet(key, value){
+  try{
+    const r = await fetch(`${SB_REST}?on_conflict=key`, {
+      method:'POST',
+      headers:{ ...SB_HEADERS, Prefer:'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value, updated_at:new Date().toISOString() }),
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return true;
+  }catch(e){ return false; }
+}
+const _pushTimers = {};
+function sbPush(key, value){
+  setSyncStatus('saving');
+  clearTimeout(_pushTimers[key]);
+  _pushTimers[key] = setTimeout(async ()=>{
+    const ok = await sbSet(key, value);
+    setSyncStatus(ok ? 'online' : 'offline');
+  }, 600);
+}
+
 const ITEM_KEY = 'pibok_items_v1';
 const TXN_KEY  = 'pibok_txns_v1';
 
@@ -468,8 +519,8 @@ function loadTxns(){
   try{ const r = localStorage.getItem(TXN_KEY); if(r){ const p=JSON.parse(r); if(Array.isArray(p)) return p; } }catch(e){}
   return SEED_TXNS.map((t,i)=>({...t, id:'x'+i}));
 }
-function saveItems(){ try{ localStorage.setItem(ITEM_KEY, JSON.stringify(ITEMS)); }catch(e){} }
-function saveTxns(){ try{ localStorage.setItem(TXN_KEY, JSON.stringify(TXNS)); }catch(e){} }
+function saveItems(){ try{ localStorage.setItem(ITEM_KEY, JSON.stringify(ITEMS)); }catch(e){} sbPush(ITEM_KEY, ITEMS); }
+function saveTxns(){ try{ localStorage.setItem(TXN_KEY, JSON.stringify(TXNS)); }catch(e){} sbPush(TXN_KEY, TXNS); }
 
 let ITEMS = loadItems();
 let TXNS  = loadTxns();
@@ -722,11 +773,12 @@ function saveEditModal(){
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeEditModal(); closeVoucher(); } });
 
 function resetData(){
-  if(!confirm('모든 품목 정보와 입출고 내역을 초기 상태로 되돌릴까요?')) return;
+  if(!confirm('모든 품목 정보와 입출고 내역을 초기 상태로 되돌릴까요?\n(클라우드 데이터도 초기화됩니다.)')) return;
   localStorage.removeItem(ITEM_KEY);
   localStorage.removeItem(TXN_KEY);
   ITEMS = loadItems();
   TXNS = loadTxns();
+  saveItems(); saveTxns();
   fillItemSelect();
   renderAll();
 }
@@ -1063,6 +1115,48 @@ function generateVoucher(){
   XLSX.writeFile(wb, `피복비전표_${(ym||'').replace('-','') || todayStr()}.xlsx`);
 }
 
+/* ============== 클라우드 로드 / 백업 / 복원 ============== */
+async function sbInit(){
+  setSyncStatus('loading');
+  const [itemsCloud, txnsCloud] = await Promise.all([sbGet(ITEM_KEY), sbGet(TXN_KEY)]);
+  if(itemsCloud===undefined && txnsCloud===undefined){ setSyncStatus('offline'); return; }
+  let changed = false;
+  if(Array.isArray(itemsCloud) && itemsCloud.length){
+    ITEMS = itemsCloud; try{ localStorage.setItem(ITEM_KEY, JSON.stringify(ITEMS)); }catch(e){} changed = true;
+  } else if(itemsCloud===null){ await sbSet(ITEM_KEY, ITEMS); }
+  if(Array.isArray(txnsCloud)){
+    TXNS = txnsCloud; try{ localStorage.setItem(TXN_KEY, JSON.stringify(TXNS)); }catch(e){} changed = true;
+  } else if(txnsCloud===null){ await sbSet(TXN_KEY, TXNS); }
+  setSyncStatus('online');
+  if(changed){ fillItemSelect(); renderAll(); }
+}
+function backupJSON(){
+  const data = { _type:'soosan-uniform-backup', _at:new Date().toISOString(), items:ITEMS, txns:TXNS };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `피복관리_백업_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function restoreJSON(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const d = JSON.parse(reader.result);
+      if(!d.items || !d.txns) throw new Error('형식 오류');
+      if(!confirm('백업 파일의 내용으로 덮어쓸까요?\n현재 데이터(클라우드 포함)가 교체됩니다.')) return;
+      ITEMS = d.items; TXNS = d.txns;
+      saveItems(); saveTxns();
+      fillItemSelect(); renderAll();
+      alert('복원이 완료되었습니다.');
+    }catch(e){ alert('복원 실패: 올바른 백업 파일이 아닙니다.'); }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 /* ============== 초기화 ============== */
 function renderAll(){
   renderStats();
@@ -1077,6 +1171,7 @@ function renderAll(){
   fillItemSelect();
   setTxnType('in');
   renderAll();
+  sbInit();
 })();
 </script>
 </body>
